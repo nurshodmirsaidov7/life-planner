@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1f8a77">
+<meta name="description" content="Plan your week, track spending and log workouts.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<title>Life Planner</title>
+<style>
+:root{--bg:#f4f3ef;--card:#fff;--ink:#1c1c1a;--mute:#6d6c66;--line:#e4e2da;--acc:#1f8a77}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#151514;--card:#21211f;--ink:#ecebe6;--mute:#9b9a93;--line:#353530}}
+:root[data-theme="dark"]{--bg:#151514;--card:#21211f;--ink:#ecebe6;--mute:#9b9a93;--line:#353530}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+body[data-t=plan]{--acc:#1f8a77}body[data-t=spend]{--acc:#b86e00}body[data-t=work]{--acc:#d4483b}body[data-t=set]{--acc:#5b6b8c}
+.soft{background:color-mix(in srgb,var(--acc) 12%,var(--card))}
+.top{position:sticky;top:0;z-index:5;background:var(--card);border-bottom:1px solid var(--line);padding:calc(8px + env(safe-area-inset-top,0px)) 16px 8px;display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.brand{font-weight:700;font-size:17px}
+#tabs{display:flex;gap:4px;flex:1;flex-wrap:wrap}
+#tabs button{border:0;background:none;padding:8px 14px;border-radius:999px;color:var(--mute);font-weight:600;display:flex;gap:6px;align-items:center}
+#tabs button.on{background:var(--acc);color:#fff}
+.wk{display:flex;gap:6px;align-items:center}
+#range{min-width:150px;text-align:center}
+.wrap{max-width:1300px;margin:0 auto;padding:16px 16px calc(24px + env(safe-area-inset-bottom,0px))}
+button,input,select,textarea{font:inherit;color:inherit;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 11px}
+button{cursor:pointer}button:hover{border-color:var(--acc)}
+button.p{background:var(--acc);border-color:var(--acc);color:#fff;font-weight:600}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--acc);outline-offset:-1px}
+input[type=checkbox]{width:20px;height:20px;margin:1px 0 0;accent-color:var(--acc);flex:0 0 auto}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:14px}
+.st,.card,.day{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.st small{color:var(--mute);display:block}.st b{font-size:21px}.st i{display:block;color:var(--mute);font-style:normal;font-size:12px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(235px,1fr));gap:12px}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px;margin-bottom:12px}
+.two>*,.grid>*{min-width:0}
+.day{display:flex;flex-direction:column;gap:6px;scroll-margin-top:72px}
+.day.today{border-color:var(--acc);box-shadow:0 0 0 2px color-mix(in srgb,var(--acc) 25%,transparent)}
+h2,h3{margin:0}h3{font-size:15px;display:flex;justify-content:space-between;align-items:center}
+h2{font-size:16px;margin-bottom:8px}
+.mute{color:var(--mute)}
+.row{display:flex;gap:6px;align-items:center;padding:4px 0;border-bottom:1px dashed var(--line)}
+.row label{flex:1;display:flex;gap:8px;align-items:flex-start;word-break:break-word}
+.row.done label span{text-decoration:line-through;color:var(--mute)}
+.row .g{flex:1;min-width:0;word-break:break-word}.row .a{white-space:nowrap;font-variant-numeric:tabular-nums}
+.ib{border:0;background:none;padding:6px 8px;color:var(--mute)}
+.f{display:flex;gap:6px;flex-wrap:wrap}.f>*{flex:1 1 120px;min-width:0}.f .n{flex:1 1 80px}.f .w{flex-basis:100%}.f .x{flex:0 0 auto}
+.exs{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:6px;margin-top:6px}
+.exs label small{display:block;color:var(--mute);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.exs input{width:100%}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:auto;padding-top:4px}
+.chip{font-size:12px;padding:2px 9px;border-radius:999px}
+.bar{height:10px;border-radius:6px;background:color-mix(in srgb,var(--acc) 15%,var(--card));overflow:hidden}
+.bar i{display:block;height:100%;background:var(--acc)}.bar.over i{background:#c0392b}
+.cat{display:grid;grid-template-columns:90px 1fr auto;gap:8px;align-items:center;margin:6px 0}.cat span:last-child{text-align:right}
+.dh{display:flex;justify-content:space-between;font-weight:600;margin:12px 0 2px}
+table{width:100%;border-collapse:collapse}td,th{padding:6px 8px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}th{color:var(--mute);font-weight:600;font-size:12px}
+tr.hit td{background:color-mix(in srgb,#2e9e5b 14%,var(--card))}
+.sc{overflow-x:auto}
+textarea{width:100%;min-height:110px;font-family:ui-monospace,monospace;font-size:12px}
+.empty{color:var(--mute);padding:6px 0}
+.btns{display:flex;gap:8px;flex-wrap:wrap}.btns>*{flex:1 1 140px;text-align:center}
+.nudge{display:flex;gap:10px;align-items:center;justify-content:space-between;margin-bottom:12px}.nudge .btns{flex-wrap:nowrap;align-items:center}.nudge .btns>*{flex:0 0 auto}
+details summary{cursor:pointer;color:var(--mute);margin-top:12px}
+#toast{position:fixed;left:50%;bottom:calc(90px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:999px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:20;max-width:90vw;text-align:center}
+#toast.on{opacity:1}
+dialog{border:1px solid var(--line);border-radius:16px;background:var(--card);color:var(--ink);max-width:min(420px,92vw);padding:18px}
+dialog::backdrop{background:rgba(0,0,0,.45)}
+dialog .btns{margin-top:14px}
+@media (max-width:759px){
+  .top{padding-left:12px;padding-right:12px}
+  .brand{display:none}body[data-t=set] .brand{display:block}
+  .wk{flex:1}#range{flex:1;min-width:0}
+  #tabs{position:fixed;left:0;right:0;bottom:0;z-index:10;background:var(--card);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(4,1fr);gap:2px;padding:5px 6px calc(5px + env(safe-area-inset-bottom,0px))}
+  #tabs button{flex-direction:column;gap:0;padding:5px 0;border-radius:12px;font-size:11px}
+  #tabs button .i{font-size:21px;line-height:1.2}
+  #tabs button.on{background:color-mix(in srgb,var(--acc) 15%,var(--card));color:var(--acc)}
+  .wrap{padding:12px 12px calc(88px + env(safe-area-inset-bottom,0px))}
+  .stats{grid-template-columns:1fr 1fr;gap:8px}.st b{font-size:18px}
+  .grid{grid-template-columns:1fr}
+  .two{grid-template-columns:1fr}
+  input,select,textarea{font-size:16px}
+}
+</style>
+</head>
+<body data-t="plan">
+<div class="top">
+  <span class="brand">Life Planner</span>
+  <nav id="tabs">
+    <button data-a="tab" data-t="plan"><span class="i">📅</span>Plan</button><button data-a="tab" data-t="spend"><span class="i">💸</span>Spending</button><button data-a="tab" data-t="work"><span class="i">💪</span>Workout</button><button data-a="tab" data-t="set"><span class="i">⚙️</span>Settings</button>
+  </nav>
+  <div class="wk" id="wknav"><button data-a="nav" data-n="-7" aria-label="Previous week">←</button><b id="range"></b><button data-a="now" id="today">Today</button><button data-a="nav" data-n="7" aria-label="Next week">→</button></div>
+</div>
+<div class="wrap" id="main"></div>
+<input type="file" id="file" accept=".json,application/json,text/plain" hidden>
+<dialog id="dlg"></dialog>
+<div id="toast"></div>
+<script>
+const CATS=[["Food","🍽️"],["Transport","🚌"],["Study","📚"],["Bills","🧾"],["Shopping","🛍️"],["Fun","🎮"],["Other","•"]];
+const DEF_EX=[{id:"pu",name:"Pull-ups",on:true},{id:"di",name:"Dips",on:true},{id:"ps",name:"Push-ups",on:true}];
+const DN=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+const LISTS=["tasks","exp","wo","runs"];
+const STORE="life-planner";
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const pad=n=>String(n).padStart(2,"0");
+const key=d=>d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
+const dt=k=>{const[y,m,d]=k.split("-").map(Number);return new Date(y,m-1,d)};
+const addD=(d,n)=>{const x=new Date(d);x.setDate(x.getDate()+n);return x};
+const mon=d=>addD(new Date(d.getFullYear(),d.getMonth(),d.getDate()),-((d.getDay()+6)%7));
+const wd=w=>[...Array(7)].map((_,i)=>addD(w,i));
+const inW=(k,D)=>k>=key(D[0])&&k<=key(D[6]);
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const sh=(d,o)=>d.toLocaleDateString("en-GB",o);
+const isDay=k=>/^\d{4}-\d\d-\d\d$/.test(k);
+const blank=()=>({v:3,tasks:[],exp:[],ex:DEF_EX.map(e=>({...e})),wo:[],runs:[],budget:0,cur:"UZS",goal:2,lastExport:null});
+
+// Accepts this app's backups and the old laptop planner's backup text (both its formats).
+function norm(d){
+  if(!d||typeof d!=="object"||!(d.tasks||d.exp||d.wo||d.runs))throw new Error("bad");
+  const o=blank();
+  const flat=(x,f)=>Array.isArray(x)?x:Object.entries(x||{}).flatMap(([k,a])=>(a||[]).map(i=>f(k,i)));
+  o.tasks=flat(d.tasks,(k,t)=>({id:t.id,d:k,t:t.t,x:t.d})).map(t=>({id:t.id||uid(),d:t.d,t:String(t.t??""),x:!!t.x}));
+  o.exp=flat(d.exp,(k,e)=>({...e,d:k})).map(e=>({id:e.id||uid(),d:e.d,n:String(e.n??""),a:+e.a||0,c:e.c||"Other"}));
+  if(Array.isArray(d.ex)&&d.ex.length)o.ex=d.ex.map(e=>({id:String(e.id),name:String(e.name||e.id),on:e.on!==false}));
+  o.wo=(d.wo||[]).map(w=>{let r=w.r;if(!r){r={};["pu","di","ps"].forEach(k=>{if(+w[k])r[k]=+w[k]})}
+    const c={};Object.entries(r).forEach(([k,v])=>{if(+v)c[k]=+v});return{id:w.id||uid(),d:w.d,r:c,n:String(w.n||"")}});
+  o.wo.forEach(w=>Object.keys(w.r).forEach(k=>{if(!o.ex.some(e=>e.id===k))o.ex.push({id:k,name:k,on:false})}));
+  o.runs=(d.runs||[]).map(r=>({id:r.id||uid(),d:r.d,km:+r.km||0,min:+r.min||0,n:String(r.n||"")}));
+  LISTS.forEach(l=>o[l]=o[l].filter(x=>isDay(x.d)));
+  ["budget","goal"].forEach(k=>{if(d[k]!=null)o[k]=Math.max(0,+d[k]||0)});
+  if(d.cur==="USD"||d.cur==="UZS")o.cur=d.cur;
+  o.lastExport=d.lastExport||null;
+  return o;
+}
+function merge(a,b){
+  const o={...a};
+  LISTS.forEach(l=>{const m=new Map(a[l].map(x=>[x.id,x]));b[l].forEach(x=>m.set(x.id,x));o[l]=[...m.values()]});
+  const ex=new Map(a.ex.map(e=>[e.id,e]));b.ex.forEach(e=>{if(!ex.has(e.id))ex.set(e.id,e)});o.ex=[...ex.values()];
+  return o;
+}
+
+let S=blank();
+function save(){try{localStorage.setItem(STORE,JSON.stringify(S))}catch(e){toast("Couldn't save — storage is full or blocked")}}
+try{const r=localStorage.getItem(STORE);if(r)S=norm(JSON.parse(r))}catch(e){}
+try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
+
+const money=n=>S.cur==="USD"?"$"+n.toFixed(2):Math.round(n).toLocaleString("en-US").replace(/,/g," ")+" so'm";
+const reps=w=>Object.values(w.r).reduce((s,v)=>s+v,0);
+const exReps=id=>w=>w.r[id]||0;
+const sum=(a,f)=>a.reduce((s,x)=>s+(typeof f==="function"?f(x):x[f]||0),0);
+const exName=id=>(S.ex.find(e=>e.id===id)||{name:id}).name;
+const repTxt=w=>Object.entries(w.r).map(([k,v])=>`${v} ${esc(exName(k))}`).join(" · ");
+function pace(m,k){if(!k)return"—";const p=m/k;let a=Math.floor(p),s=Math.round((p-a)*60);if(s===60){a++;s=0}return a+":"+pad(s)+" /km"}
+const stat=(l,v,s)=>`<div class="st"><small>${l}</small><b>${v}</b><i>${s||"&nbsp;"}</i></div>`;
+const bar=(p,over)=>`<div class="bar ${over?"over":""}"><i style="width:${Math.min(100,p)}%"></i></div>`;
+const dayLbl=d=>`${DN[(d.getDay()+6)%7]} ${d.getDate()} ${sh(d,{month:"short"})}`;
+const hasData=()=>LISTS.some(l=>S[l].length);
+let tab="plan",ws=mon(new Date()),lastD=null,nudgeOff=false;
+const dflt=D=>{if(lastD&&inW(lastD,D))return lastD;const t=key(new Date());return inW(t,D)?t:key(D[0])};
+
+function vPlan(D){
+  const tk=key(new Date());
+  const T=S.tasks.filter(t=>inW(t.d,D)),E=S.exp.filter(e=>inW(e.d,D)),W=S.wo.filter(w=>inW(w.d,D)),R=S.runs.filter(r=>inW(r.d,D));
+  const done=T.filter(t=>t.x).length;
+  const days=S.lastExport?Math.floor((Date.now()-S.lastExport)/864e5):null;
+  let h=!nudgeOff&&hasData()&&(days===null||days>=7)?`<div class="card soft nudge"><span>💾 ${days===null?"You haven't exported a backup yet.":`Last backup was ${days} days ago.`}</span><span class="btns" style="flex:0 0 auto"><button class="p" data-a="exp">Export</button><button class="ib" data-a="nudge" aria-label="Dismiss">✕</button></span></div>`:"";
+  h+=`<div class="stats">${stat("Tasks done",done+" / "+T.length,T.length?Math.round(done/T.length*100)+"% complete":"Add tasks below")}${stat("Spent",money(sum(E,"a")),"this week")}${stat("Workout reps",sum(W,reps),"this week")}${stat("Runs",R.length+" / "+S.goal,sum(R,"km").toFixed(1)+" km")}</div><div class="grid">`;
+  D.forEach((d,i)=>{
+    const k=key(d),t=S.tasks.filter(x=>x.d===k),sp=sum(S.exp.filter(e=>e.d===k),"a"),rp=sum(S.wo.filter(w=>w.d===k),reps),km=sum(S.runs.filter(r=>r.d===k),"km");
+    h+=`<div class="day ${k===tk?"today":""}" data-form data-k="${k}"><h3><span>${DN[i]} ${d.getDate()} ${sh(d,{month:"short"})}</span>${k===tk?'<span class="chip soft">Today</span>':""}</h3>
+    ${t.map(x=>`<div class="row ${x.x?"done":""}"><label><input type="checkbox" data-a="tg" data-id="${x.id}" ${x.x?"checked":""}><span>${esc(x.t)}</span></label><button class="ib" data-a="mv" data-id="${x.id}" title="Move to next day" aria-label="Move to next day">↪</button><button class="ib" data-a="dt" data-id="${x.id}" title="Delete" aria-label="Delete">✕</button></div>`).join("")||'<div class="empty">Nothing planned</div>'}
+    <div class="f"><input name="t" placeholder="Add a task…" enterkeyhint="done"><button class="p x" data-a="at" aria-label="Add task">+</button></div>
+    <div class="chips">${sp?`<span class="chip soft">💸 ${money(sp)}</span>`:""}${rp?`<span class="chip soft">💪 ${rp} reps</span>`:""}${km?`<span class="chip soft">🏃 ${+km.toFixed(2)} km</span>`:""}</div></div>`;
+  });
+  return h+"</div>";
+}
+
+function vSpend(D){
+  const E=S.exp.filter(e=>inW(e.d,D)),tot=sum(E,"a"),by={};
+  E.forEach(e=>by[e.c]=(by[e.c]||0)+e.a);
+  const mk=key(D[0]).slice(0,7),mt=sum(S.exp.filter(e=>e.d.startsWith(mk)),"a");
+  const names=[...new Set(S.exp.map(e=>e.n))].slice(-40);
+  const mx=Math.max(1,...Object.values(by));
+  const left=S.budget?S.budget-tot:null;
+  const list=D.map(d=>{const k=key(d),x=E.filter(e=>e.d===k);if(!x.length)return"";
+    return `<div class="dh"><span>${dayLbl(d)}</span><span>${money(sum(x,"a"))}</span></div>`+x.map(e=>`<div class="row"><span class="g">${esc(e.n)} <small class="mute">${esc(e.c)}</small></span><span class="a">${money(e.a)}</span><button class="ib" data-a="de" data-id="${e.id}" aria-label="Delete">✕</button></div>`).join("")}).join("");
+  return `<div class="stats">${stat("Spent this week",money(tot))}${stat("Daily average",money(tot/7))}${stat("Budget left",left===null?"—":money(left),S.budget?"of "+money(S.budget):"Set one in Settings")}${stat(sh(D[0],{month:"long"}),money(mt),"month so far")}</div>
+  <div class="card soft" data-form style="margin-bottom:12px"><h2>Add an expense</h2><div class="f"><input name="n" class="w" list="nm" placeholder="What did you buy?" enterkeyhint="next"><input name="a" class="n" type="number" inputmode="decimal" min="0" step="any" placeholder="Amount"><select name="c">${CATS.map(c=>`<option value="${c[0]}">${c[1]} ${c[0]}</option>`).join("")}</select><input type="date" name="d" value="${dflt(D)}"><button class="p" data-a="ae">Add</button></div><datalist id="nm">${names.map(n=>`<option value="${esc(n)}">`).join("")}</datalist></div>
+  <div class="two"><div class="card"><h2>This week</h2>${list||'<div class="empty">No spending logged this week.</div>'}</div>
+  <div class="card"><h2>By category</h2>${S.budget?bar(tot/S.budget*100,tot>S.budget)+'<div style="margin-bottom:10px"></div>':""}${Object.entries(by).sort((a,b)=>b[1]-a[1]).map(([c,v])=>`<div class="cat"><span>${esc(c)}</span>${bar(v/mx*100)}<span>${money(v)}</span></div>`).join("")||'<div class="empty">Nothing yet.</div>'}</div></div>`;
+}
+
+function vWork(D){
+  const W=S.wo.filter(w=>inW(w.d,D)),R=S.runs.filter(r=>inW(r.d,D));
+  const byD={};S.wo.forEach(w=>byD[w.d]=(byD[w.d]||0)+reps(w));
+  const dv=Object.values(byD),best=Math.max(0,...dv),km=sum(S.runs,"km"),mn=sum(S.runs,"min");
+  const act=S.ex.filter(e=>e.on),cols=S.ex.filter(e=>e.on||S.wo.some(w=>w.r[e.id]));
+  const dates=[...S.wo,...S.runs].map(x=>x.d).sort();
+  let first=dates.length?mon(dt(dates[0])):ws;if(first>ws)first=ws;
+  const wks=[];for(let w=new Date(first);w<=ws;w=addD(w,7))wks.push(new Date(w));
+  const hist=wks.slice(-10).reverse().map(w=>{const X=wd(w),a=S.wo.filter(o=>inW(o.d,X)),r=S.runs.filter(o=>inW(o.d,X));
+    return `<tr class="${S.goal&&r.length>=S.goal?"hit":""}"><td>${sh(w,{day:"numeric",month:"short"})}</td>${cols.map(e=>`<td>${sum(a,exReps(e.id))}</td>`).join("")}<td><b>${sum(a,reps)}</b></td><td>${r.length}/${S.goal}</td><td>${sum(r,"km").toFixed(1)}</td></tr>`}).join("");
+  const log=D.map(d=>{const k=key(d),a=S.wo.filter(w=>w.d===k),r=S.runs.filter(x=>x.d===k);if(!a.length&&!r.length)return"";
+    return `<div class="dh"><span>${dayLbl(d)}</span></div>`+
+    a.map(w=>`<div class="row"><span class="g">💪 ${repTxt(w)} <small class="mute">${esc(w.n)}</small></span><b>${reps(w)}</b><button class="ib" data-a="dw" data-id="${w.id}" aria-label="Delete">✕</button></div>`).join("")+
+    r.map(x=>`<div class="row"><span class="g">🏃 ${x.km} km in ${x.min} min · ${pace(x.min,x.km)} <small class="mute">${esc(x.n)}</small></span><button class="ib" data-a="dr" data-id="${x.id}" aria-label="Delete">✕</button></div>`).join("")}).join("");
+  const d0=dflt(D),num=(n,p)=>`<input name="${n}" class="n" type="number" inputmode="decimal" min="0" step="any" placeholder="${p}">`;
+  const wkBy=act.map(e=>`${sum(W,exReps(e.id))} ${esc(e.name)}`).join(" · ");
+  return `<div class="stats">${stat("Reps this week",sum(W,reps),wkBy)}${stat("Runs this week",R.length+" / "+S.goal,S.goal&&R.length>=S.goal?"Goal hit 🎉":sum(R,"km").toFixed(1)+" km")}${stat("Week pace",pace(sum(R,"min"),sum(R,"km")))}${stat("All-time reps",sum(dv,x=>x),dv.filter(v=>v>0).length+" active days · best "+best)}${stat("All-time running",km.toFixed(1)+" km",S.runs.length+" runs · "+pace(mn,km))}</div>
+  <div class="card" style="margin-bottom:12px"><div class="mute" style="margin-bottom:4px">Run goal this week</div>${bar(S.goal?R.length/S.goal*100:0)}</div>
+  <div class="two"><div class="card soft" data-form><h2>Log reps</h2><input type="date" name="d" value="${d0}" style="width:100%">
+  ${act.length?`<div class="exs">${act.map(e=>`<label><small>${esc(e.name)}</small><input name="r_${e.id}" type="number" inputmode="numeric" min="0" step="any" placeholder="0"></label>`).join("")}</div>`:'<div class="empty">No exercises — add some in Settings.</div>'}
+  <div class="f" style="margin-top:6px"><input name="n" placeholder="Note (optional)" style="flex:2 1 160px"><button class="p" data-a="aw">Add to day</button></div><small class="mute">Adds to that day's totals if you already logged something.</small></div>
+  <div class="card soft" data-form><h2>Log a run</h2><div class="f"><input type="date" name="d" value="${d0}" class="w">${num("km","km")}${num("min","Minutes")}</div><div class="f" style="margin-top:6px"><input name="n" placeholder="Note (optional)" style="flex:2 1 160px"><button class="p" data-a="ar">Add run</button></div></div></div>
+  <div class="two"><div class="card"><h2>This week's log</h2>${log||'<div class="empty">Nothing logged this week.</div>'}</div>
+  <div class="card"><h2>Week by week <small class="mute">(green = run goal hit)</small></h2><div class="sc"><table><tr><th>Week of</th>${cols.map(e=>`<th>${esc(e.name)}</th>`).join("")}<th>Total</th><th>Runs</th><th>km</th></tr>${hist}</table></div></div></div>`;
+}
+
+function vSet(){
+  const o=v=>`<option ${S.cur===v?"selected":""}>${v}</option>`;
+  const days=S.lastExport?Math.floor((Date.now()-S.lastExport)/864e5):null;
+  const share=!!(navigator.canShare&&navigator.canShare({files:[new File(["{}"],"x.json",{type:"application/json"})]}));
+  return `<div class="two"><div class="card"><h2>Preferences</h2>
+  <p><label>Currency<br><select data-s="cur">${o("UZS")}${o("USD")}</select></label></p>
+  <p><label>Weekly budget (0 = none)<br><input type="number" inputmode="decimal" min="0" data-s="budget" value="${S.budget||0}"></label></p>
+  <p><label>Weekly run goal<br><input type="number" inputmode="numeric" min="0" data-s="goal" value="${S.goal}"></label></p></div>
+  <div class="card"><h2>Exercises</h2><p class="mute" style="margin-top:0">Tap a name to rename it. Hidden exercises keep their history but leave the log form.</p>
+  ${S.ex.map(e=>`<div class="row"><input class="g" data-ex="${e.id}" value="${esc(e.name)}" aria-label="Exercise name" style="${e.on?"":"opacity:.55"}"><button class="ib" data-a="exon" data-id="${e.id}">${e.on?"Hide":"Show"}</button><button class="ib" data-a="exdel" data-id="${e.id}" aria-label="Delete">✕</button></div>`).join("")||'<div class="empty">No exercises yet.</div>'}
+  <div class="f" data-form style="margin-top:8px"><input name="nx" placeholder="New exercise, e.g. Squats"><button class="p x" data-a="exadd">Add</button></div></div>
+  <div class="card"><h2>Backup</h2><p class="mute" style="margin-top:0">Your data lives on this device only. Export a backup file to keep it safe or to move it between your phone and laptop.</p>
+  <p>${days===null?"No backup exported yet.":days===0?"Last backup: today.":`Last backup: ${days} day${days===1?"":"s"} ago.`}<br><small class="mute">${S.tasks.length} tasks · ${S.exp.length} expenses · ${S.wo.length} workouts · ${S.runs.length} runs</small></p>
+  <div class="btns"><button class="p" data-a="exp">⬇️ Export backup</button>${share?'<button data-a="share">📤 Share backup</button>':""}<button data-a="imp">⬆️ Import backup</button></div>
+  <details><summary>Paste backup text instead (from the old laptop planner)</summary><p><textarea id="bk" placeholder="Paste the text from “Show my data”"></textarea></p><button data-a="paste">Import pasted text</button></details></div></div>`;
+}
+
+function render(){
+  const D=wd(ws),a=D[0],b=D[6];document.body.dataset.t=tab;
+  $("#range").textContent=a.getMonth()===b.getMonth()?`${a.getDate()}–${b.getDate()} ${sh(b,{month:"short",year:"numeric"})}`:`${sh(a,{day:"numeric",month:"short"})} – ${sh(b,{day:"numeric",month:"short",year:"numeric"})}`;
+  $("#today").style.display=+ws===+mon(new Date())?"none":"";
+  document.querySelectorAll("#tabs button").forEach(b=>b.classList.toggle("on",b.dataset.t===tab));
+  $("#wknav").style.display=tab==="set"?"none":"";
+  $("#main").innerHTML={plan:vPlan,spend:vSpend,work:vWork,set:vSet}[tab](D);
+}
+
+let tt;function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("on");clearTimeout(tt);tt=setTimeout(()=>t.classList.remove("on"),2600)}
+function ask(html,btns){return new Promise(res=>{const d=$("#dlg");
+  d.innerHTML=html+`<div class="btns">${btns.map((b,i)=>`<button class="${i===0?"p":""}" value="${b[0]}">${b[1]}</button>`).join("")}</div>`;
+  d.querySelectorAll("button").forEach(b=>b.onclick=()=>{d.close();res(b.value)});d.oncancel=()=>res(null);d.showModal()})}
+
+const backupText=()=>JSON.stringify({...S,app:"life-planner",exportedAt:new Date().toISOString()});
+const backupName=()=>`life-planner-${key(new Date())}.json`;
+function exported(){S.lastExport=Date.now();save();render()}
+function doExport(){
+  const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([backupText()],{type:"application/json"}));a.download=backupName();
+  document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1500);
+  exported();toast("Backup saved to Downloads");
+}
+async function doShare(){
+  try{await navigator.share({files:[new File([backupText()],backupName(),{type:"application/json"})],title:"Life Planner backup"});exported()}
+  catch(e){if(e.name!=="AbortError")toast("Sharing failed — use Export instead")}
+}
+async function doImport(text){
+  let d;try{d=norm(JSON.parse(text))}catch(e){toast("That isn't a valid Life Planner backup");return}
+  const c=`${d.tasks.length} tasks, ${d.exp.length} expenses, ${d.wo.length} workouts and ${d.runs.length} runs`;
+  const r=await ask(`<h2>Import backup?</h2><p>This backup has ${c}.</p><p class="mute"><b>Merge</b> adds anything missing and keeps what's already here. <b>Replace</b> wipes this device's data and uses the backup instead.</p>`,
+    hasData()?[["merge","Merge"],["replace","Replace"],["","Cancel"]]:[["replace","Import"],["","Cancel"]]);
+  if(!r)return;
+  if(r==="replace")S=d;else S=merge(S,d);
+  save();render();toast("Backup imported ✓");
+}
+
+document.addEventListener("click",async e=>{
+  const b=e.target.closest("[data-a]");if(!b)return;
+  const a=b.dataset.a,id=b.dataset.id,f=b.closest("[data-form]");
+  const el=n=>f.querySelector(`[name="${n}"]`),v=n=>el(n).value.trim(),nv=n=>Math.max(0,parseFloat(v(n))||0);
+  let refocus=null;
+  if(a==="tab"){tab=b.dataset.t;render();scrollTo(0,0);return}
+  if(a==="nav"){ws=addD(ws,+b.dataset.n);render();return}
+  if(a==="now"){ws=mon(new Date());render();return}
+  if(a==="exp")return doExport();
+  if(a==="share")return doShare();
+  if(a==="imp"){$("#file").value="";$("#file").click();return}
+  if(a==="paste")return doImport($("#bk").value);
+  if(a==="nudge"){nudgeOff=true;render();return}
+  if(a==="tg"){const t=S.tasks.find(x=>x.id===id);t.x=b.checked}
+  else if(a==="mv"){const t=S.tasks.find(x=>x.id===id);t.d=key(addD(dt(t.d),1))}
+  else if(a==="dt")S.tasks=S.tasks.filter(x=>x.id!==id);
+  else if(a==="de")S.exp=S.exp.filter(x=>x.id!==id);
+  else if(a==="dw")S.wo=S.wo.filter(x=>x.id!==id);
+  else if(a==="dr")S.runs=S.runs.filter(x=>x.id!==id);
+  else if(a==="at"){if(!v("t"))return;S.tasks.push({id:uid(),d:f.dataset.k,t:v("t"),x:false});refocus=`.day[data-k="${f.dataset.k}"] [name=t]`}
+  else if(a==="ae"){if(!v("n")||!nv("a")||!v("d"))return toast("Add a name and an amount");lastD=v("d");S.exp.push({id:uid(),d:v("d"),n:v("n"),a:nv("a"),c:v("c")})}
+  else if(a==="aw"){const d=v("d"),r={};S.ex.filter(x=>x.on).forEach(x=>{const n=nv("r_"+x.id);if(n)r[x.id]=n});
+    if(!d||!Object.keys(r).length)return toast("Enter at least one number");lastD=d;
+    const x=S.wo.find(o=>o.d===d);
+    if(x){Object.entries(r).forEach(([k,n])=>x.r[k]=(x.r[k]||0)+n);if(v("n"))x.n=(x.n?x.n+"; ":"")+v("n")}else S.wo.push({id:uid(),d,r,n:v("n")})}
+  else if(a==="ar"){if(!v("d")||!nv("km")||!nv("min"))return toast("Enter km and minutes");lastD=v("d");S.runs.push({id:uid(),d:v("d"),km:nv("km"),min:nv("min"),n:v("n")})}
+  else if(a==="exadd"){const n=v("nx");if(!n)return;S.ex.push({id:uid(),name:n,on:true});refocus='[name=nx]'}
+  else if(a==="exon"){const x=S.ex.find(o=>o.id===id);x.on=!x.on}
+  else if(a==="exdel"){const x=S.ex.find(o=>o.id===id),used=S.wo.filter(w=>w.r[id]);
+    if(used.length){const r=await ask(`<h2>Delete ${esc(x.name)}?</h2><p>It has reps logged on ${used.length} day${used.length===1?"":"s"}. Deleting removes those reps from your history. Hiding keeps them.</p>`,[["hide","Hide instead"],["del","Delete anyway"],["","Cancel"]]);
+      if(!r)return;if(r==="hide")x.on=false;else{S.wo.forEach(w=>delete w.r[id]);S.wo=S.wo.filter(w=>reps(w)||w.n);S.ex=S.ex.filter(o=>o.id!==id)}}
+    else S.ex=S.ex.filter(o=>o.id!==id)}
+  else return;
+  save();render();
+  if(refocus)$(refocus)?.focus();
+});
+document.addEventListener("keydown",e=>{
+  if(e.key!=="Enter"||e.target.tagName!=="INPUT")return;
+  const f=e.target.closest("[data-form]");if(f){e.preventDefault();f.querySelector("button[data-a]").click()}
+});
+document.addEventListener("change",e=>{
+  const t=e.target,s=t.dataset.s,x=t.dataset.ex;
+  if(s){S[s]=s==="cur"?t.value:Math.max(0,parseFloat(t.value)||0);save();render()}
+  else if(x){const o=S.ex.find(q=>q.id===x),n=t.value.trim();if(n)o.name=n;else t.value=o.name;save()}
+});
+$("#file").addEventListener("change",e=>{const f=e.target.files[0];if(f)f.text().then(doImport)});
+
+render();
+if(matchMedia("(max-width:759px)").matches)$(".day.today")?.scrollIntoView({block:"start"});
+if("serviceWorker" in navigator&&location.protocol.startsWith("http"))navigator.serviceWorker.register("sw.js");
+</script>
+</body>
+</html>
