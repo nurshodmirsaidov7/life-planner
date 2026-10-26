@@ -163,5 +163,16 @@ dialog h2{margin:0 0 8px;font-size:18px}
 .fi{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid var(--line);cursor:pointer}
 .fi:last-child{border-bottom:0}
 .steps{display:flex;gap:6px;justify-content:center;margin:2px 0 14px}.steps i{width:24px;height:4px;border-radius:2px;background:var(--line)}.steps i.on{background:var(--acc)}
+/* sign-in */
+body.authing #tabs{display:none}
+.auth{max-width:400px;margin:0 auto;padding:24px 0;text-align:center}
+.auth .alogo{border-radius:18px;display:block;margin:8px auto 10px}
+.auth h1{margin:0 0 4px;font-size:28px}
+.auth .alang{width:auto;margin:6px auto 16px;display:block;padding:6px 10px;font-size:14px}
+.auth .tile{margin-bottom:12px;text-align:left;font-size:14px}
+.auth [data-form]{text-align:left}
+.gbtn{background:var(--bg);border:1px solid var(--line);color:var(--ink);padding:12px}
+.or{display:flex;align-items:center;gap:10px;color:var(--mute);font-size:13px;margin:16px 0}
+.or:before,.or:after{content:"";flex:1;height:1px;background:var(--line)}
 @media (max-width:759px){input,select,textarea{font-size:16px}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}

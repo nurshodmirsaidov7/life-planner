@@ -85,7 +85,8 @@ function merge(a,b){
 
 // ---------- state ----------
 let S=blank();
-function save(){try{localStorage.setItem(STORE,JSON.stringify(S))}catch(e){toast(T("Couldn't save. Storage is full or blocked"))}}
+function save(){try{localStorage.setItem(STORE,JSON.stringify(S))}catch(e){toast(T("Couldn't save. Storage is full or blocked"))}
+  if(typeof cloudPush==="function")cloudPush()}
 try{const r=localStorage.getItem(STORE);if(r)S=norm(JSON.parse(r))}catch(e){}
 // Built-in exercise and food names follow the language, unless the user renamed them.
 function localizeDefaults(){
@@ -215,8 +216,9 @@ function render(){
   if(S.theme==="auto")delete document.documentElement.dataset.theme;else document.documentElement.dataset.theme=S.theme;
   $$("#tabs button[data-t]").forEach(b=>b.classList.toggle("on",b.dataset.t===tab));
   document.body.classList.toggle("anim",anim);
+  const gate=typeof needAuth==="function"&&needAuth();document.body.classList.toggle("authing",gate);
   CQ=[];
-  $("#main").innerHTML=V[tab].render();
+  $("#main").innerHTML=gate?authView():V[tab].render();
   drawCharts();anim=false;
   if(sheetFn&&$("#sheet").open)$("#sh-b").innerHTML=sheetFn();
 }

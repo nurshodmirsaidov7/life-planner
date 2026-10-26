@@ -17,7 +17,6 @@ Object.assign(I18N.uz,{
 "Delete":"Oʻchirish","Delete anyway":"Baribir oʻchirish","Delete goal":"Maqsadni oʻchirish","Delete this set":"Bu setni oʻchirish","Delete {x}?":"{x} oʻchirilsinmi?","Deleted":"Oʻchirildi","Deleted item":"Oʻchirilgan element","Deleted {x}":"{x} oʻchirildi",
 "Dinner":"Kechki ovqat","Dismiss":"Yopish","Distance":"Masofa","Distance, km":"Masofa, km","Done":"Bajarildi","Eaten":"Yeyildi","Edit":"Tahrirlash","Edit task":"Vazifani tahrirlash","Enter at least one number":"Kamida bitta raqam kiriting",
 "Enter distance and time":"Masofa va vaqtni kiriting","Enter kg and reps":"Kg va takrorlarni kiriting","Enter minutes or units done":"Daqiqa yoki bajarilgan qismlarni kiriting","Enter your weight in kg":"Vazningizni kg da kiriting",
-"Every day":"Har kuni","Everything stays on this phone and works offline. Export a backup in Settings now and then.":"Hammasi shu telefonda saqlanadi va internetsiz ishlaydi. Vaqti-vaqti bilan Sozlamalarda zaxira nusxa oling.",
 "Exercise":"Mashq","Expense":"Xarajat","Export":"Eksport","Extra: physical job + training":"Juda yuqori: jismoniy ish + mashgʻulot","F":"Y","Fat":"Yogʻ","Fat g":"Yogʻ, g","Felt good":"Yaxshi his qildim","Female":"Ayol",
 "Finish":"Tugatish","Finished":"Tugallangan","Fitness":"Fitnes","Food":"Ovqat","Food deleted":"Ovqat oʻchirildi","Food updated":"Ovqat yangilandi","Full body":"Butun tana","Fun":"Koʻngilochar","Gain muscle slowly":"Sekin mushak orttirish",
 "Give it a name":"Nom bering","Goal":"Maqsad","Goal deleted":"Maqsad oʻchirildi","Goals and preferences":"Maqsadlar va sozlamalar","Goals this week":"Bu haftalik maqsadlar","Good afternoon":"Xayrli kun","Good evening":"Xayrli kech",
@@ -102,7 +101,6 @@ Object.assign(I18N.ru,{
 "Delete":"Удалить","Delete anyway":"Всё равно удалить","Delete goal":"Удалить цель","Delete this set":"Удалить подход","Delete {x}?":"Удалить «{x}»?","Deleted":"Удалено","Deleted item":"Удалённый элемент","Deleted {x}":"Удалено: {x}",
 "Dinner":"Ужин","Dismiss":"Скрыть","Distance":"Дистанция","Distance, km":"Дистанция, км","Done":"Готово","Eaten":"Съедено","Edit":"Изменить","Edit task":"Изменить задачу","Enter at least one number":"Введите хотя бы одно число",
 "Enter distance and time":"Введите дистанцию и время","Enter kg and reps":"Введите вес и повторения","Enter minutes or units done":"Введите минуты или сделанные части","Enter your weight in kg":"Введите вес в кг",
-"Every day":"Каждый день","Everything stays on this phone and works offline. Export a backup in Settings now and then.":"Всё хранится на этом телефоне и работает без интернета. Время от времени делайте копию в Настройках.",
 "Exercise":"Упражнение","Expense":"Расход","Export":"Экспорт","Extra: physical job + training":"Очень высокая: физическая работа + тренировки","F":"Ж","Fat":"Жиры","Fat g":"Жиры, г","Felt good":"Хорошее самочувствие","Female":"Женский",
 "Finish":"Готово","Finished":"Завершено","Fitness":"Фитнес","Food":"Еда","Food deleted":"Блюдо удалено","Food updated":"Блюдо обновлено","Full body":"Всё тело","Fun":"Развлечения","Gain muscle slowly":"Медленно набирать мышцы",
 "Give it a name":"Дайте название","Goal":"Цель","Goal deleted":"Цель удалена","Goals and preferences":"Цели и параметры","Goals this week":"Цели на неделю","Good afternoon":"Добрый день","Good evening":"Добрый вечер",
@@ -169,4 +167,47 @@ Object.assign(I18N.ru,{
 "Overhead press":"Жим стоя","Barbell row":"Тяга штанги в наклоне","Lat pulldown":"Тяга верхнего блока","Biceps curl":"Сгибания на бицепс","Triceps pushdown":"Разгибания на трицепс","Lateral raise":"Махи в стороны",
 "Chicken breast, cooked":"Куриная грудка, готовая","Rice, cooked":"Рис, варёный","Egg":"Яйцо","Tvorog (cottage cheese 5%)":"Творог 5%","Greek yogurt 2%":"Греческий йогурт 2%","Potato, boiled":"Картофель, варёный",
 "Cucumber":"Огурец","Milk 2.5%":"Молоко 2,5%","Banana":"Банан","Oats, dry":"Овсянка, сухая","White bread":"Белый хлеб","Cola":"Кола"
+});
+// accounts and sync
+Object.assign(I18N.uz,{
+"Every day":"Har kuni","Account":"Hisob","Account deleted":"Hisob oʻchirildi","All changes synced":"Barcha oʻzgarishlar sinxronlandi","An account with this email already exists. Sign in instead.":"Bu email bilan hisob allaqachon bor. Kirish tugmasini bosing.",
+"Confirm it's you":"Bu siz ekanligingizni tasdiqlang","Connect to the internet so they reach your account, or sign out anyway and lose them.":"Ular hisobingizga yetib borishi uchun internetga ulaning yoki baribir chiqing va ularni yoʻqotasiz.",
+"Connect to the internet to sign in.":"Kirish uchun internetga ulaning.","Continue with Google":"Google bilan davom etish","Couldn't sign in. Try again.":"Kirib boʻlmadi. Qaytadan urinib koʻring.","Create account":"Hisob yaratish",
+"Create an account":"Hisob yaratish","Delete account":"Hisobni oʻchirish","Delete forever":"Butunlay oʻchirish","Delete your account?":"Hisobingiz oʻchirilsinmi?","Email":"Email",
+"Enter your email first, then tap “Forgot password?”.":"Avval emailingizni kiriting, soʻng “Parolni unutdingizmi?” ni bosing.","Enter your email.":"Emailingizni kiriting.","Enter your password.":"Parolingizni kiriting.",
+"Everything syncs to your account and works offline too.":"Hammasi hisobingizga sinxronlanadi va internetsiz ham ishlaydi.","For safety, sign out, sign in again, then delete your account.":"Xavfsizlik uchun chiqing, qayta kiring, soʻng hisobni oʻchiring.",
+"Forgot password?":"Parolni unutdingizmi?","I already have an account":"Menda hisob bor","No internet connection. Try again when you're online.":"Internet yoʻq. Internet boʻlganda qayta urinib koʻring.",
+"Offline. Changes will sync when you're online.":"Internet yoʻq. Oʻzgarishlar internet boʻlganda sinxronlanadi.","Password":"Parol","Password reset email sent. Check your inbox.":"Parolni tiklash xati yuborildi. Pochtangizni tekshiring.",
+"Sign in":"Kirish","Sign out":"Chiqish","Sign out anyway":"Baribir chiqish","Sign out?":"Chiqilsinmi?","Some changes haven't synced":"Baʼzi oʻzgarishlar sinxronlanmagan",
+"Sync is blocked: the Firestore security rules aren't published yet.":"Sinxronlash bloklangan: Firestore xavfsizlik qoidalari hali eʼlon qilinmagan.","Sync problem. Your data is still saved on this phone.":"Sinxronlashda muammo. Maʼlumotlaringiz shu telefonda saqlangan.",
+"Syncing…":"Sinxronlanmoqda…","That email doesn't look right.":"Bu email notoʻgʻri koʻrinadi.","This address isn't allowed to sign in yet. Add it in Firebase under Authentication → Settings → Authorized domains.":"Bu manzildan hali kirish mumkin emas. Uni Firebase da Authentication → Settings → Authorized domains ga qoʻshing.",
+"This email already uses another sign-in method. Try Google or email instead.":"Bu email boshqa kirish usulidan foydalanadi. Google yoki email bilan urinib koʻring.",
+"This permanently deletes your account and all your TrackMe data on every device. It can't be undone.":"Bu hisobingizni va barcha qurilmalardagi TrackMe maʼlumotlaringizni butunlay oʻchiradi. Buni qaytarib boʻlmaydi.",
+"This sign-in method isn't turned on in Firebase yet.":"Bu kirish usuli Firebase da hali yoqilmagan.","Tip: export a backup first in Settings → Backup.":"Maslahat: avval Sozlamalar → Zaxira nusxa boʻlimida nusxa oling.",
+"Too many attempts. Wait a bit and try again.":"Urinishlar juda koʻp. Biroz kuting va qayta urinib koʻring.","Use at least 6 characters for the password.":"Parol kamida 6 ta belgidan iborat boʻlsin.","Wrong email or password.":"Email yoki parol notoʻgʻri.",
+"Your data is private to your account and syncs between your devices. You can delete your account and all data anytime in Settings.":"Maʼlumotlaringiz faqat sizning hisobingizda va qurilmalaringiz oʻrtasida sinxronlanadi. Hisob va barcha maʼlumotlarni istalgan vaqtda Sozlamalarda oʻchirishingiz mumkin.",
+"Your data on this phone will be saved to your account when you sign in.":"Kirganingizda shu telefondagi maʼlumotlaringiz hisobingizga saqlanadi.",
+"Your data stays in your account. It will be removed from this device until you sign in again.":"Maʼlumotlaringiz hisobingizda qoladi. Qayta kirguningizcha ular bu qurilmadan olib tashlanadi.",
+"Your data syncs to your account. You can also export a backup file to keep your own copy.":"Maʼlumotlaringiz hisobingizga sinxronlanadi. Oʻzingiz uchun zaxira fayl ham olishingiz mumkin.","or":"yoki"
+});
+Object.assign(I18N.ru,{
+"Every day":"Каждый день","Account":"Аккаунт","Account deleted":"Аккаунт удалён","All changes synced":"Все изменения синхронизированы","An account with this email already exists. Sign in instead.":"Аккаунт с этим email уже есть. Войдите в него.",
+"Confirm it's you":"Подтвердите, что это вы","Connect to the internet so they reach your account, or sign out anyway and lose them.":"Подключитесь к интернету, чтобы они дошли до аккаунта, или выйдите и потеряйте их.",
+"Connect to the internet to sign in.":"Подключитесь к интернету, чтобы войти.","Continue with Google":"Продолжить с Google","Couldn't sign in. Try again.":"Не удалось войти. Попробуйте ещё раз.","Create account":"Создать аккаунт",
+"Create an account":"Создать аккаунт","Delete account":"Удалить аккаунт","Delete forever":"Удалить навсегда","Delete your account?":"Удалить аккаунт?","Email":"Email",
+"Enter your email first, then tap “Forgot password?”.":"Сначала введите email, затем нажмите «Забыли пароль?».","Enter your email.":"Введите email.","Enter your password.":"Введите пароль.",
+"Everything syncs to your account and works offline too.":"Всё синхронизируется с аккаунтом и работает без интернета.","For safety, sign out, sign in again, then delete your account.":"Для безопасности выйдите, войдите снова и затем удалите аккаунт.",
+"Forgot password?":"Забыли пароль?","I already have an account":"У меня уже есть аккаунт","No internet connection. Try again when you're online.":"Нет интернета. Попробуйте, когда появится связь.",
+"Offline. Changes will sync when you're online.":"Нет сети. Изменения синхронизируются, когда появится интернет.","Password":"Пароль","Password reset email sent. Check your inbox.":"Письмо для сброса пароля отправлено. Проверьте почту.",
+"Sign in":"Войти","Sign out":"Выйти","Sign out anyway":"Всё равно выйти","Sign out?":"Выйти?","Some changes haven't synced":"Не все изменения синхронизированы",
+"Sync is blocked: the Firestore security rules aren't published yet.":"Синхронизация заблокирована: правила безопасности Firestore ещё не опубликованы.","Sync problem. Your data is still saved on this phone.":"Проблема с синхронизацией. Данные сохранены на этом телефоне.",
+"Syncing…":"Синхронизация…","That email doesn't look right.":"Похоже, email указан неверно.","This address isn't allowed to sign in yet. Add it in Firebase under Authentication → Settings → Authorized domains.":"С этого адреса пока нельзя войти. Добавьте его в Firebase: Authentication → Settings → Authorized domains.",
+"This email already uses another sign-in method. Try Google or email instead.":"Этот email использует другой способ входа. Попробуйте Google или email.",
+"This permanently deletes your account and all your TrackMe data on every device. It can't be undone.":"Аккаунт и все данные TrackMe на всех устройствах будут удалены навсегда. Отменить это нельзя.",
+"This sign-in method isn't turned on in Firebase yet.":"Этот способ входа ещё не включён в Firebase.","Tip: export a backup first in Settings → Backup.":"Совет: сначала сделайте копию в Настройки → Резервная копия.",
+"Too many attempts. Wait a bit and try again.":"Слишком много попыток. Подождите и попробуйте снова.","Use at least 6 characters for the password.":"Пароль должен быть не короче 6 символов.","Wrong email or password.":"Неверный email или пароль.",
+"Your data is private to your account and syncs between your devices. You can delete your account and all data anytime in Settings.":"Ваши данные доступны только вам и синхронизируются между устройствами. Аккаунт и все данные можно удалить в любой момент в Настройках.",
+"Your data on this phone will be saved to your account when you sign in.":"После входа данные с этого телефона сохранятся в аккаунте.",
+"Your data stays in your account. It will be removed from this device until you sign in again.":"Данные останутся в аккаунте. С этого устройства они будут удалены, пока вы снова не войдёте.",
+"Your data syncs to your account. You can also export a backup file to keep your own copy.":"Данные синхронизируются с аккаунтом. Также можно сохранить файл копии для себя.","or":"или"
 });

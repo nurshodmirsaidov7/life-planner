@@ -62,7 +62,7 @@ function welcomeSheet(){
   const dots=`<div class="steps">${[0,1,2].map(i=>`<i class="${i<=ob?"on":""}"></i>`).join("")}</div>`;
   if(ob===0)return dots+`<div data-form><label class="fl"><span>Language · Til · Язык</span><select data-c="pref" data-k="lang">${opt("",T("Same as my phone"),!S.lang)}${LANGS.map(([c,l])=>opt(c,l,S.lang===c)).join("")}</select></label>
     <p style="font-size:16px">${T("Plan your days and track your money, workouts, food and learning, all in one place.")}</p>
-    <p class="lb">${T("Everything stays on this phone and works offline. Export a backup in Settings now and then.")}</p>
+    <p class="lb">${T("Everything syncs to your account and works offline too.")}</p>
     <label class="fl"><span>${T("What should we call you?")}</span><input name="name" data-i="obname" value="${esc(S.name)}" placeholder="${T("Your name")}"></label><button class="btn p w" data-a="ob" data-v="0">${T("Continue")}</button></div>`;
   if(ob===1)return dots+`<div data-form><p style="margin-top:0">${T("These numbers set your daily calorie and protein target.")}</p>${bodyFields(S.body)}
     <label class="fl"><span>${T("Goal")}</span><select name="goal">${GOALS.map(([v,l])=>opt(v,T(l),S.body.goal===v)).join("")}</select></label>
@@ -84,8 +84,9 @@ A.welcome=()=>{openWelcome();return false};
 C.obname=el=>{S.name=el.value.trim().slice(0,40)};
 $("#sheet").addEventListener("close",()=>{if(!S.onb&&ob<=2){S.onb=true;save()}});
 
+cloudInit();
 render();
-if(!S.onb)openWelcome();
+if(!S.onb&&!needAuth())openWelcome();
 
 if("serviceWorker" in navigator&&location.protocol==="https:"){
   const had=!!navigator.serviceWorker.controller;
