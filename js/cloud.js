@@ -10,7 +10,7 @@ const PRIVACY_URL="https://nurshodmirsaidov7.github.io/privacy.html?lang=";   //
 // Local testing against the Firebase emulator: http://127.0.0.1:PORT/?emu=1
 const EMU=/^(localhost|127\.0\.0\.1)$/.test(location.hostname)&&/[?&]emu=1/.test(location.search);
 const SETF=Object.keys(blank()).filter(k=>!LISTS.includes(k));
-let db=null,user=null,authReady=false,base=null,unsub=[],sync="off",remote=null,pendingApply=false,amode="in";
+let db=null,user=null,authReady=false,base=null,unsub=[],sync="off",remote=null,pendingApply=false,amode="in",inFlight=0;
 
 const enc=x=>JSON.stringify(x);
 function snapOf(s){const b={lists:{},set:{}};LISTS.forEach(l=>{const m=b.lists[l]={};s[l].forEach(x=>m[x.id]=enc(x))});SETF.forEach(k=>b.set[k]=enc(s[k]));return b}
@@ -57,9 +57,9 @@ function cloudPush(){
     for(const id in b)if(!(id in a))up.push(new FP("items",id),FV.delete());
     if(up.length){batch.set(ref,{},{merge:true});batch.update(ref,...up);n++}});
   base=now;
-  if(!n)return;
-  setSync("saving");
-  batch.commit().then(()=>setSync("synced"),e=>{setSync("error");syncErr(e)});
+  if(!n){if(!inFlight&&sync==="saving")setSync("synced");return}   // nothing to send: already in step
+  inFlight++;setSync("saving");
+  batch.commit().then(()=>{inFlight--;if(!inFlight&&sync!=="error")setSync("synced")},e=>{inFlight--;setSync("error");syncErr(e)});
 }
 
 async function startSync(u){

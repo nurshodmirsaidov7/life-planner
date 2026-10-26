@@ -1,6 +1,6 @@
 // Offline support. Every version's files are cached together, so the app never mixes old and new code.
 // Bump C when shipping changes: the new worker caches the new set, then the page offers a reload.
-const C="lp-v6";
+const C="lp-v7";
 const ASSETS=["./","index.html","css/app.css","js/vendor/chart.umd.min.js","js/vendor/firebase-app-compat.js","js/vendor/firebase-auth-compat.js","js/vendor/firebase-firestore-compat.js","js/icons.js","js/i18n.js","js/i18n-dict.js","js/core.js","js/plan.js","js/money.js","js/workout.js","js/food.js","js/learn.js","js/add.js","js/settings.js","js/cloud.js","js/app.js",
   "manifest.webmanifest","icon-192.png","icon-512.png","icon-maskable.png","apple-touch-icon.png"];
 self.addEventListener("install",e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(ASSETS.map(a=>new Request(a,{cache:"reload"})))));self.skipWaiting()});
