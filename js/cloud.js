@@ -6,6 +6,7 @@
 const FB_CFG={apiKey:"AIzaSyCqv1Z5miWaGEbKh2G3uPERgBndAIqwPnM",authDomain:"trackme-3c801.firebaseapp.com",projectId:"trackme-3c801",
   storageBucket:"trackme-3c801.firebasestorage.app",messagingSenderId:"553547445654",appId:"1:553547445654:web:2340fc367e8d000f7859b7"};
 const OWNER="trackme-uid",DIRTY="trackme-dirty";
+const PRIVACY_URL="https://nurshodmirsaidov7.github.io/privacy.html?lang=";   // the page picks the language from the end of this link
 // Local testing against the Firebase emulator: http://127.0.0.1:PORT/?emu=1
 const EMU=/^(localhost|127\.0\.0\.1)$/.test(location.hostname)&&/[?&]emu=1/.test(location.search);
 const SETF=Object.keys(blank()).filter(k=>!LISTS.includes(k));
@@ -121,7 +122,8 @@ function authView(){
   <label class="fl"><span>${T("Password")}</span><input name="pw" type="password" autocomplete="${up?"new-password":"current-password"}" ${up?'minlength="6"':""}></label>
   <button class="btn p w" data-a="esign">${up?T("Create account"):T("Sign in")}</button></div>
   <div class="f" style="margin-top:10px;justify-content:center"><button class="btn ghost x" data-a="amode">${up?T("I already have an account"):T("Create an account")}</button>${up?"":`<button class="btn ghost x" data-a="reset">${T("Forgot password?")}</button>`}</div>
-  <p class="lb" style="margin-top:18px">${T("Your data is private to your account and syncs between your devices. You can delete your account and all data anytime in Settings.")}</p></div>`;
+  <p class="lb" style="margin-top:18px">${T("Your data is private to your account and syncs between your devices. You can delete your account and all data anytime in Settings.")}
+  <a href="${PRIVACY_URL}${LANG}" target="_blank" rel="noopener" style="color:inherit">${T("Privacy policy")}</a></p></div>`;
 }
 const AUTH_ERR={"auth/invalid-email":"That email doesn't look right.","auth/invalid-credential":"Wrong email or password.","auth/wrong-password":"Wrong email or password.",
   "auth/user-not-found":"Wrong email or password.","auth/invalid-login-credentials":"Wrong email or password.","auth/email-already-in-use":"An account with this email already exists. Sign in instead.",

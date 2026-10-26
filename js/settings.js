@@ -29,7 +29,7 @@ V.set={nav:null,render(){
     <div class="f"><button class="btn p" data-a="exp">${ic("download","s")} ${T("Export")}</button>${share?`<button class="btn" data-a="share">${ic("share","s")} ${T("Share")}</button>`:""}<button class="btn" data-a="imp">${ic("upload","s")} ${T("Import")}</button></div>
     <details><summary>${T("Paste backup text instead")}</summary><textarea id="bk" style="min-height:90px;margin-top:8px;font-family:ui-monospace,monospace;font-size:12px" placeholder="${T("Paste backup text here")}"></textarea><button class="btn" data-a="paste" style="margin-top:8px">${T("Import pasted text")}</button></details>`)}
   <div class="two">${listTile("ex")}${listTile("lifts")}</div>
-  <p class="lb" style="text-align:center">TrackMe 3 · ${T("works offline")} · <a href="#" data-a="welcome" style="color:inherit">${T("show welcome again")}</a></p></div>`;
+  <p class="lb" style="text-align:center">TrackMe 3 · ${T("works offline")} · <a href="#" data-a="welcome" style="color:inherit">${T("show welcome again")}</a> · <a href="${PRIVACY_URL}${LANG}" target="_blank" rel="noopener" style="color:inherit">${T("Privacy policy")}</a></p></div>`;
 }};
 
 // ---- backup ----
