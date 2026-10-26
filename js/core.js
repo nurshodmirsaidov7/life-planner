@@ -39,7 +39,8 @@ const COL={today:"var(--c-today)",money:"var(--c-money)",work:"var(--c-work)",fo
 
 function blank(){return{v:5,tasks:[],goals:[],rec:[],exp:[],ex:DEF_EX.map(e=>({...e})),wo:[],runs:[],lifts:DEF_LIFTS.map(e=>({...e})),sets:[],
   split:["","","","","","",""],foods:DEF_FOODS.map(f=>({...f})),meals:[],weights:[],body:{...DEF_BODY},learn:[],study:[],
-  budget:0,cur:"UZS",goal:2,theme:"auto",lastExport:null,name:"",onb:false,studyGoal:60,lang:""}}
+  budget:0,cur:"UZS",goal:2,theme:"auto",lastExport:null,name:"",onb:false,studyGoal:60,lang:"",rem:{...DEF_REM,what:[...DEF_REM.what]}}}
+const DEF_REM={on:false,h:21,tz:"",lang:"",what:["tasks","food","work","study"]};
 
 // Accepts every backup format so far: v2/v3 phone versions and the old laptop planner.
 function norm(d){
@@ -71,6 +72,8 @@ function norm(d){
   if(d.cur==="USD"||d.cur==="UZS")o.cur=d.cur;
   if(["auto","light","dark"].includes(d.theme))o.theme=d.theme;
   o.lastExport=d.lastExport||null;o.name=str(d.name).slice(0,40);o.onb=!!d.onb;o.lang=LANGS.some(l=>l[0]===d.lang)?d.lang:"";
+  if(d.rem&&typeof d.rem==="object"){const r=d.rem;o.rem={on:!!r.on,h:Math.min(23,Math.max(0,parseInt(r.h,10)||0)),tz:str(r.tz),lang:str(r.lang),
+    what:arr(r.what).filter(w=>DEF_REM.what.includes(w))}}
   return o;
 }
 function merge(a,b){

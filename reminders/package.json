@@ -1,0 +1,9 @@
+{
+  "name": "trackme-reminders",
+  "private": true,
+  "type": "module",
+  "description": "Hourly job that sends TrackMe's daily reminder notifications.",
+  "dependencies": {
+    "firebase-admin": "12.7.0"
+  }
+}

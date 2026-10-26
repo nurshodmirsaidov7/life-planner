@@ -18,6 +18,7 @@ V.set={nav:null,render(){
   const n=(k,l,v)=>`<label class="fl"><span>${l}</span><input type="number" inputmode="decimal" min="0" data-c="pref" data-k="${k}" value="${v}"></label>`;
   return head(T("Settings"),{sub:"TrackMe"})+`<div class="stack">
   ${accountTile()}
+  ${remindTile()}
   ${tile(`<h2>${T("You")}</h2><label class="fl"><span>${T("Language")}</span><select data-c="pref" data-k="lang">${opt("",T("Same as my phone"),!S.lang)}${LANGS.map(([c,l])=>opt(c,l,S.lang===c)).join("")}</select></label>
     <label class="fl"><span>${T("Your name")}</span><input data-c="pref" data-k="name" value="${esc(S.name)}" placeholder="${T("Shown in the greeting")}"></label>
     <div class="f"><button class="btn" data-a="split">${ic("calendar-week","s")} ${T("Weekly split")}</button><button class="btn" data-a="ftgt">${ic("target","s")} ${T("Calories")}${tg?": "+tg.kcal:""}</button></div>`)}

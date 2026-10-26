@@ -86,6 +86,7 @@ async function startSync(u){
   setLang(S.lang);localizeDefaults();
   save();subscribe();render();
   if(!S.onb&&!$("#sheet").open)openWelcome();
+  remindRefresh();
 }
 function subscribe(){
   remote={set:null,lists:{}};let gs=false,gl=false;
@@ -156,11 +157,11 @@ function accountTile(){
 }
 // Wait (briefly) for queued changes to reach the server before data leaves this device.
 const flushed=()=>Promise.race([db.waitForPendingWrites().then(()=>true),new Promise(r=>setTimeout(()=>r(false),6000))]);
-async function wipeDevice(){localStorage.removeItem(STORE);localStorage.removeItem(OWNER);localStorage.removeItem(DIRTY);try{await db.terminate();await db.clearPersistence()}catch(e){}location.reload()}
+async function wipeDevice(){[STORE,OWNER,DIRTY,PUSHED].forEach(k=>localStorage.removeItem(k));try{await db.terminate();await db.clearPersistence()}catch(e){}location.reload()}
 A.signout=async()=>{
   if(!await ask(`<h2>${T("Sign out?")}</h2><p class="lb">${T("Your data stays in your account. It will be removed from this device until you sign in again.")}</p>`,[["y",T("Sign out")],["",T("Cancel")]]))return false;
   if(!await flushed()&&!await ask(`<h2>${T("Some changes haven't synced")}</h2><p class="lb">${T("Connect to the internet so they reach your account, or sign out anyway and lose them.")}</p>`,[["",T("Cancel")],["y",T("Sign out anyway")]]))return false;
-  stopSync();await firebase.auth().signOut();await wipeDevice();return false};
+  await dropDevice();stopSync();await firebase.auth().signOut();await wipeDevice();return false};
 A.delacct=async()=>{
   if(!await ask(`<h2>${T("Delete your account?")}</h2><p>${T("This permanently deletes your account and all your TrackMe data on every device. It can't be undone.")}</p><p class="lb">${T("Tip: export a backup first in Settings → Backup.")}</p>`,[["",T("Cancel")],["y",T("Delete forever")]]))return false;
   try{

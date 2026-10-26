@@ -1,0 +1,36 @@
+# Sends TrackMe's daily reminders. Runs a few minutes past every hour; each user is nudged at their own local hour.
+# Needs the repository secret FIREBASE_SERVICE_ACCOUNT (Firebase → Project settings → Service accounts → Generate new private key).
+name: Daily reminders
+on:
+  schedule:
+    - cron: "3 * * * *"
+  workflow_dispatch:
+    inputs:
+      test:
+        description: "Send a test notification to everyone with the reminder on, right now"
+        type: boolean
+        default: false
+permissions:
+  contents: read
+concurrency:
+  group: reminders
+  cancel-in-progress: false
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    defaults:
+      run:
+        working-directory: reminders
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: reminders/package-lock.json
+      - run: npm ci --omit=dev --no-audit --no-fund
+      - run: node send.mjs
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          TEST: ${{ inputs.test == true }}

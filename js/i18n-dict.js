@@ -170,7 +170,13 @@ Object.assign(I18N.ru,{
 });
 // accounts and sync
 Object.assign(I18N.uz,{
-"Every day":"Har kuni","Privacy policy":"Maxfiylik siyosati","Account":"Hisob","Account deleted":"Hisob oʻchirildi","All changes synced":"Barcha oʻzgarishlar sinxronlandi","An account with this email already exists. Sign in instead.":"Bu email bilan hisob allaqachon bor. Kirish tugmasini bosing.",
+"Every day":"Har kuni","Privacy policy":"Maxfiylik siyosati",
+"Daily reminder":"Kunlik eslatma","One evening nudge, only for what you haven't done yet today.":"Kechqurun bitta eslatma: faqat bugun hali qilinmagan ishlar uchun.","Time":"Vaqt","Remind me about":"Nimalarni eslatish",
+"Tasks left":"Qolgan vazifalar","Workout (training days)":"Mashgʻulot (mashq kunlari)","Also notify this device":"Bu qurilmaga ham yuborish","Send a test notification":"Sinov bildirishnomasini yuborish",
+"Notifications aren't available here. On iPhone, add TrackMe to the Home Screen first.":"Bu yerda bildirishnomalar ishlamaydi. iPhone da avval TrackMe ni Bosh ekranga qoʻshing.",
+"Notifications are blocked for TrackMe. Allow them in your phone's settings, then try again.":"TrackMe uchun bildirishnomalar bloklangan. Telefon sozlamalarida ruxsat bering va qayta urinib koʻring.",
+"Notifications weren't allowed.":"Bildirishnomalarga ruxsat berilmadi.","Reminder on: every day at {h}":"Eslatma yoqildi: har kuni soat {h} da","Couldn't turn on notifications. Try again.":"Bildirishnomalarni yoqib boʻlmadi. Qayta urinib koʻring.",
+"Reminder off":"Eslatma oʻchirildi","This device will get reminders too":"Bu qurilma ham eslatmalarni oladi","Evening check-in":"Kechki eslatma","This is how your reminder will look.":"Eslatmangiz shunday koʻrinadi.","Account":"Hisob","Account deleted":"Hisob oʻchirildi","All changes synced":"Barcha oʻzgarishlar sinxronlandi","An account with this email already exists. Sign in instead.":"Bu email bilan hisob allaqachon bor. Kirish tugmasini bosing.",
 "Confirm it's you":"Bu siz ekanligingizni tasdiqlang","Connect to the internet so they reach your account, or sign out anyway and lose them.":"Ular hisobingizga yetib borishi uchun internetga ulaning yoki baribir chiqing va ularni yoʻqotasiz.",
 "Connect to the internet to sign in.":"Kirish uchun internetga ulaning.","Continue with Google":"Google bilan davom etish","Couldn't sign in. Try again.":"Kirib boʻlmadi. Qaytadan urinib koʻring.","Create account":"Hisob yaratish",
 "Create an account":"Hisob yaratish","Delete account":"Hisobni oʻchirish","Delete forever":"Butunlay oʻchirish","Delete your account?":"Hisobingiz oʻchirilsinmi?","Email":"Email",
@@ -191,7 +197,13 @@ Object.assign(I18N.uz,{
 "Your data syncs to your account. You can also export a backup file to keep your own copy.":"Maʼlumotlaringiz hisobingizga sinxronlanadi. Oʻzingiz uchun zaxira fayl ham olishingiz mumkin.","or":"yoki"
 });
 Object.assign(I18N.ru,{
-"Every day":"Каждый день","Privacy policy":"Политика конфиденциальности","Account":"Аккаунт","Account deleted":"Аккаунт удалён","All changes synced":"Все изменения синхронизированы","An account with this email already exists. Sign in instead.":"Аккаунт с этим email уже есть. Войдите в него.",
+"Every day":"Каждый день","Privacy policy":"Политика конфиденциальности",
+"Daily reminder":"Ежедневное напоминание","One evening nudge, only for what you haven't done yet today.":"Одно вечернее напоминание — только о том, что сегодня ещё не сделано.","Time":"Время","Remind me about":"Напоминать о",
+"Tasks left":"Оставшиеся задачи","Workout (training days)":"Тренировка (в дни тренировок)","Also notify this device":"Уведомлять и это устройство","Send a test notification":"Отправить тестовое уведомление",
+"Notifications aren't available here. On iPhone, add TrackMe to the Home Screen first.":"Здесь уведомления недоступны. На iPhone сначала добавьте TrackMe на экран «Домой».",
+"Notifications are blocked for TrackMe. Allow them in your phone's settings, then try again.":"Уведомления для TrackMe заблокированы. Разрешите их в настройках телефона и попробуйте снова.",
+"Notifications weren't allowed.":"Уведомления не разрешены.","Reminder on: every day at {h}":"Напоминание включено: каждый день в {h}","Couldn't turn on notifications. Try again.":"Не удалось включить уведомления. Попробуйте ещё раз.",
+"Reminder off":"Напоминание выключено","This device will get reminders too":"Это устройство тоже будет получать напоминания","Evening check-in":"Вечернее напоминание","This is how your reminder will look.":"Так будет выглядеть ваше напоминание.","Account":"Аккаунт","Account deleted":"Аккаунт удалён","All changes synced":"Все изменения синхронизированы","An account with this email already exists. Sign in instead.":"Аккаунт с этим email уже есть. Войдите в него.",
 "Confirm it's you":"Подтвердите, что это вы","Connect to the internet so they reach your account, or sign out anyway and lose them.":"Подключитесь к интернету, чтобы они дошли до аккаунта, или выйдите и потеряйте их.",
 "Connect to the internet to sign in.":"Подключитесь к интернету, чтобы войти.","Continue with Google":"Продолжить с Google","Couldn't sign in. Try again.":"Не удалось войти. Попробуйте ещё раз.","Create account":"Создать аккаунт",
 "Create an account":"Создать аккаунт","Delete account":"Удалить аккаунт","Delete forever":"Удалить навсегда","Delete your account?":"Удалить аккаунт?","Email":"Email",
