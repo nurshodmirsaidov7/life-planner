@@ -2,7 +2,7 @@
 // ---------- Daily reminder: settings, notification permission and this device's push token ----------
 // The hourly job in .github/workflows/reminders.yml reads users/{uid}.rem (synced settings) and
 // users/{uid}.devices (one push token per device) and sends a nudge for whatever is still undone.
-const VAPID="";   // public key: Firebase → Project settings → Cloud Messaging → Web Push certificates
+const VAPID="BGIAs0S6eTxNj9hiyhGF-A94TuhfokYXXE5Fq94Jx4yq4cohA9UwBN1e3V_cIHntNrDR1qfM0adwZZ3i3COQGlM";   // public key: Firebase → Project settings → Cloud Messaging → Web Push certificates
 const REM_WHAT=[["tasks","Tasks left"],["food","Food"],["work","Workout (training days)"],["study","Study"]];
 const DEVICE="trackme-device",PUSHED="trackme-pushed";
 const deviceId=()=>{let d=localStorage.getItem(DEVICE);if(!d){d=uid()+uid();localStorage.setItem(DEVICE,d)}return d};

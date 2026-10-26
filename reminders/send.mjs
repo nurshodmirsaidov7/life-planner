@@ -12,7 +12,10 @@ import { getMessaging } from "firebase-admin/messaging";
 const TEST = process.env.TEST === "true", DRY = process.env.DRY_RUN === "true";
 const APP_URL = "https://nurshodmirsaidov7.github.io/life-planner/";
 if (process.env.FIRESTORE_EMULATOR_HOST) initializeApp({ projectId: "demo-trackme" });
-else initializeApp({ credential: cert(JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT || "{}")) });
+else if (!process.env.FIREBASE_SERVICE_ACCOUNT) {   // secret not added yet: nothing to do, and don't fail every hour
+  console.log("FIREBASE_SERVICE_ACCOUNT secret is not set; skipping reminders.");
+  process.exit(0);
+} else initializeApp({ credential: cert(JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT)) });
 const db = getFirestore();
 
 const TEXT = {
