@@ -13,7 +13,8 @@ function remindTile(){
   if(!user)return"";
   const r=S.rem,perm="Notification" in window?Notification.permission:"default";
   const note=!pushOk()?T("Notifications aren't available here. On iPhone, add TrackMe to the Home Screen first.")
-    :perm==="denied"?T("Notifications are blocked for TrackMe. Allow them in your phone's settings, then try again."):"";
+    :perm==="denied"?T("Notifications are blocked for TrackMe.")+`<ol style="margin:6px 0 0;padding-left:20px"><li>${T("Make sure the app is version 1.0.2 or newer (long-press the TrackMe icon → App info).")}</li>
+      <li>${T("Long-press the TrackMe icon → Site settings → Notifications → Allow. In a browser: ⋮ → Settings → Site settings → Notifications.")}</li><li>${T("Close TrackMe completely, open it again and turn the reminder on.")}</li></ol>`:"";
   return tile(`<h2><span>${ic("bell","s")} ${T("Daily reminder")}</span><label class="switch"><input type="checkbox" data-c="remOn" aria-label="${T("Daily reminder")}" ${r.on?"checked":""} ${pushOk()?"":"disabled"}><span></span></label></h2>
   <p class="lb" style="margin-top:0">${T("One evening nudge, only for what you haven't done yet today.")}</p>
   ${r.on?`<label class="fl"><span>${T("Time")}</span><select data-c="remH">${[...Array(24).keys()].map(h=>opt(h,pad(h)+":00",h===r.h)).join("")}</select></label>
