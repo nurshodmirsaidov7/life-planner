@@ -11,17 +11,16 @@ const wd=w=>[...Array(7)].map((_,i)=>addD(w,i));
 const monthDays=d=>{const n=new Date(d.getFullYear(),d.getMonth()+1,0).getDate();return[...Array(n)].map((_,i)=>new Date(d.getFullYear(),d.getMonth(),i+1))};
 const inR=(k,D)=>k>=key(D[0])&&k<=key(D[D.length-1]);
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
-const sh=(d,o)=>d.toLocaleDateString("en-GB",o);
+const sh=(d,o)=>fmtDate(d,o);
 const isDay=k=>typeof k==="string"&&/^\d{4}-\d\d-\d\d$/.test(k);
 const today=()=>key(new Date());
 const wdi=k=>(dt(k).getDay()+6)%7;
 const sum=(a,f)=>a.reduce((s,x)=>s+(typeof f==="function"?f(x):+x[f]||0),0);
 const r1=n=>Math.round(n*10)/10;
 const num=v=>Math.max(0,parseFloat(String(v).replace(",","."))||0);
-const DN=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"],DNL=["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
+let DN=[],DNL=[];   // weekday names in the current language, filled by setLang()
 const dayLbl=d=>`${DN[(d.getDay()+6)%7]} ${d.getDate()} ${sh(d,{month:"short"})}`;
-const hm=m=>{m=Math.round(m);if(m<60)return m+"m";const h=Math.floor(m/60);return h+"h"+(m%60?" "+m%60+"m":"")};
-const plural=(n,w)=>`${n} ${w}${n===1?"":"s"}`;
+const hm=m=>{m=Math.round(m);const u=T("m"),h=T("h");if(m<60)return m+u;const x=Math.floor(m/60);return x+h+(m%60?" "+m%60+u:"")};
 const arr=x=>Array.isArray(x)?x:[];
 const str=x=>String(x??"");
 
@@ -40,7 +39,7 @@ const COL={today:"var(--c-today)",money:"var(--c-money)",work:"var(--c-work)",fo
 
 function blank(){return{v:5,tasks:[],goals:[],rec:[],exp:[],ex:DEF_EX.map(e=>({...e})),wo:[],runs:[],lifts:DEF_LIFTS.map(e=>({...e})),sets:[],
   split:["","","","","","",""],foods:DEF_FOODS.map(f=>({...f})),meals:[],weights:[],body:{...DEF_BODY},learn:[],study:[],
-  budget:0,cur:"UZS",goal:2,theme:"auto",lastExport:null,name:"",onb:false,studyGoal:60}}
+  budget:0,cur:"UZS",goal:2,theme:"auto",lastExport:null,name:"",onb:false,studyGoal:60,lang:""}}
 
 // Accepts every backup format so far: v2/v3 phone versions and the old laptop planner.
 function norm(d){
@@ -71,7 +70,7 @@ function norm(d){
   ["budget","goal","studyGoal"].forEach(k=>{if(d[k]!=null)o[k]=Math.max(0,+d[k]||0)});
   if(d.cur==="USD"||d.cur==="UZS")o.cur=d.cur;
   if(["auto","light","dark"].includes(d.theme))o.theme=d.theme;
-  o.lastExport=d.lastExport||null;o.name=str(d.name).slice(0,40);o.onb=!!d.onb;
+  o.lastExport=d.lastExport||null;o.name=str(d.name).slice(0,40);o.onb=!!d.onb;o.lang=LANGS.some(l=>l[0]===d.lang)?d.lang:"";
   return o;
 }
 function merge(a,b){
@@ -86,11 +85,17 @@ function merge(a,b){
 
 // ---------- state ----------
 let S=blank();
-function save(){try{localStorage.setItem(STORE,JSON.stringify(S))}catch(e){toast("Couldn't save. Storage is full or blocked")}}
+function save(){try{localStorage.setItem(STORE,JSON.stringify(S))}catch(e){toast(T("Couldn't save. Storage is full or blocked"))}}
 try{const r=localStorage.getItem(STORE);if(r)S=norm(JSON.parse(r))}catch(e){}
+// Built-in exercise and food names follow the language, unless the user renamed them.
+function localizeDefaults(){
+  [[S.ex,DEF_EX],[S.lifts,DEF_LIFTS],[S.foods,DEF_FOODS]].forEach(([list,defs])=>defs.forEach(d=>{const x=list.find(i=>i.id===d.id);
+    if(x&&[d.name,I18N.uz[d.name],I18N.ru[d.name]].includes(x.name))x.name=T(d.name)}));
+}
+setLang(S.lang);localizeDefaults();
 try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
 
-const money=n=>S.cur==="USD"?"$"+n.toFixed(2):Math.round(n).toLocaleString("en-US").replace(/,/g," ")+" so'm";
+const money=n=>S.cur==="USD"?"$"+n.toFixed(2):Math.round(n).toLocaleString("en-US").replace(/,/g," ")+" "+T("so'm");
 const moneyS=n=>{if(S.cur==="USD")return"$"+(n>=1000?r1(n/1000)+"k":Math.round(n));return n>=1e6?r1(n/1e6)+"M":n>=1000?Math.round(n/1000)+"k":String(Math.round(n))};
 
 // ---------- app shell state ----------
@@ -110,7 +115,7 @@ const fire=n=>n>=2?`<span class="badge fire">${ic("flame","s")} ${n}</span>`:"";
 // Concentric progress rings, outermost first. items: [{p:0..1, color}]
 function rings(items,size=132){
   const R=[52,40,28,16];
-  return `<svg viewBox="0 0 120 120" width="${size}" height="${size}" class="rings" role="img" aria-label="Progress rings">${items.map((it,i)=>{
+  return `<svg viewBox="0 0 120 120" width="${size}" height="${size}" class="rings" role="img" aria-label="${T("Progress rings")}">${items.map((it,i)=>{
     const r=R[i],c=2*Math.PI*r,p=Math.min(1,Math.max(0,it.p||0)),len=(c*p).toFixed(1);
     return `<circle cx="60" cy="60" r="${r}" class="rt" style="stroke:${it.color}"/>${p>0?`<circle cx="60" cy="60" r="${r}" class="ra" style="stroke:${it.color};--len:${len}" stroke-dasharray="${len} ${c.toFixed(1)}" transform="rotate(-90 60 60)"/>`:""}`}).join("")}</svg>`;
 }
@@ -126,11 +131,11 @@ function weekStreak(days){const w=new Set([...days].map(k=>key(mon(dt(k)))));let
 
 // Page header with optional date navigation (kind: day | week | month).
 function head(title,{sub="",nav=null,right=""}={}){
-  const s=nav?`<button class="pn" data-a="nav" data-n="-1" aria-label="Previous">${ic("chevron-left","s")}</button><button class="pl" data-a="pick" title="Pick a date">${navLabel(nav)}</button><button class="pn" data-a="nav" data-n="1" aria-label="Next">${ic("chevron-right","s")}</button>${hasToday(nav)?"":`<button class="lk" data-a="now">Today</button>`}`:esc(sub);
-  return `<header class="hd"><div><div class="sub">${s}</div><h1>${title}</h1></div><div class="hr">${right}<button class="ib" data-a="tab" data-t="set" aria-label="Settings">${ic("settings")}</button></div></header>`;
+  const s=nav?`<button class="pn" data-a="nav" data-n="-1" aria-label="${T("Previous")}">${ic("chevron-left","s")}</button><button class="pl" data-a="pick" title="${T("Pick a date")}">${navLabel(nav)}</button><button class="pn" data-a="nav" data-n="1" aria-label="${T("Next")}">${ic("chevron-right","s")}</button>${hasToday(nav)?"":`<button class="lk" data-a="now">${T("Today")}</button>`}`:esc(sub);
+  return `<header class="hd"><div><div class="sub">${s}</div><h1>${title}</h1></div><div class="hr">${right}<button class="ib" data-a="tab" data-t="set" aria-label="${T("Settings")}">${ic("settings")}</button></div></header>`;
 }
 function navLabel(k){
-  if(k==="day"){const t=key(cur)===today();return t?"Today, "+cur.getDate()+" "+sh(cur,{month:"short"}):sh(cur,{weekday:"short",day:"numeric",month:"short"})+(cur.getFullYear()!==new Date().getFullYear()?" "+cur.getFullYear():"")}
+  if(k==="day"){const t=key(cur)===today();return t?T("Today")+", "+cur.getDate()+" "+sh(cur,{month:"short"}):sh(cur,{weekday:"short",day:"numeric",month:"short"})+(cur.getFullYear()!==new Date().getFullYear()?" "+cur.getFullYear():"")}
   if(k==="month")return sh(cur,{month:"long",year:"numeric"});
   const D=wkD(),a=D[0],b=D[6];
   return a.getMonth()===b.getMonth()?`${a.getDate()}–${b.getDate()} ${sh(b,{month:"short"})}`:`${sh(a,{day:"numeric",month:"short"})} – ${sh(b,{day:"numeric",month:"short"})}`;
@@ -143,7 +148,7 @@ function toast(m,act){const t=$("#toast");t.innerHTML=`<span>${esc(m)}</span>`;
   if(act){const b=document.createElement("button");b.textContent=act.label;b.onclick=()=>{t.classList.remove("on");act.fn()};t.appendChild(b)}
   t.classList.add("on");clearTimeout(tt);tt=setTimeout(()=>t.classList.remove("on"),act?5000:2600)}
 const snap=()=>{undoSnap=JSON.stringify(S)};   // call before a destructive change
-const undoToast=m=>toast(m,{label:"Undo",fn:()=>{if(!undoSnap)return;S=norm(JSON.parse(undoSnap));undoSnap=null;save();render();toast("Restored")}});
+const undoToast=m=>toast(m,{label:T("Undo"),fn:()=>{if(!undoSnap)return;S=norm(JSON.parse(undoSnap));undoSnap=null;save();render();toast(T("Restored"))}});
 function ask(html,btns){return new Promise(res=>{const d=$("#dlg");
   d.innerHTML=html+`<div class="f">${btns.map((b,i)=>`<button class="btn ${i===0?"p":""}" value="${b[0]}">${b[1]}</button>`).join("")}</div>`;
   d.querySelectorAll("button").forEach(b=>b.onclick=()=>{d.close();res(b.value)});d.oncancel=()=>res(null);d.showModal()})}
@@ -201,8 +206,12 @@ function lines(labels,sets,o={}){
 
 // ---------- rendering ----------
 function navKind(){const n=V[tab].nav;return typeof n==="function"?n():n||null}
+const NAV=[["today","home","Today"],["spend","wallet","Money"],null,["fit","heartbeat","Fitness"],["learn","book","Learn"]];
 function render(){
   const t=tab==="fit"?mode.fit:tab;document.body.dataset.t=t;
+  if($("#tabs").dataset.lang!==LANG){$("#tabs").dataset.lang=LANG;
+    $("#tabs").innerHTML=NAV.map(n=>n?`<button data-a="tab" data-t="${n[0]}">${ic(n[1])}<span>${T(n[2])}</span></button>`:`<button data-a="add" class="fab" aria-label="${T("Add")}">${ic("plus")}</button>`).join("");
+    $("#sh-x").setAttribute("aria-label",T("Close"));document.title="TrackMe"}
   if(S.theme==="auto")delete document.documentElement.dataset.theme;else document.documentElement.dataset.theme=S.theme;
   $$("#tabs button[data-t]").forEach(b=>b.classList.toggle("on",b.dataset.t===tab));
   document.body.classList.toggle("anim",anim);

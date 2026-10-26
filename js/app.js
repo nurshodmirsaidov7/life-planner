@@ -1,6 +1,6 @@
 "use strict";
 // ---------- wiring: navigation, events, swipe, welcome, offline ----------
-$$("#tabs,.sh-h").forEach(el=>el.innerHTML=el.innerHTML.replace(/__([\w-]+)__/g,(m,n)=>ic(n)));
+$$(".sh-h").forEach(el=>el.innerHTML=el.innerHTML.replace(/__([\w-]+)__/g,(m,n)=>ic(n)));
 
 A.tab=b=>{tab=b.dataset.t;anim=true;closeSheet();scrollTo(0,0)};
 A.nav=b=>{const n=+b.dataset.n,k=navKind();anim=true;
@@ -58,30 +58,30 @@ document.addEventListener("visibilitychange",()=>{if(document.visibilityState!==
 const PRESETS=[["","Name each day myself later"],["Chest & Biceps|Back & Triceps|Shoulders|Legs","Chest & Biceps / Back & Triceps / Shoulders / Legs"],["Push|Pull|Legs","Push / Pull / Legs"],["Upper body|Lower body","Upper / Lower"],["Full body","Full body"]];
 let ob=0;
 function welcomeSheet(){
+  $("#sh-t").textContent=T(["Welcome to TrackMe","Your body","Your training"][ob]);
   const dots=`<div class="steps">${[0,1,2].map(i=>`<i class="${i<=ob?"on":""}"></i>`).join("")}</div>`;
-  if(ob===0)return dots+`<div data-form><p style="font-size:16px;margin-top:0">Plan your days and track your money, workouts, food and learning, all in one place.</p>
-    <p class="lb">Everything stays on this phone and works offline. Export a backup in Settings now and then.</p>
-    <label class="fl"><span>What should we call you?</span><input name="name" value="${esc(S.name)}" placeholder="Your name" autofocus></label><button class="btn p w" data-a="ob" data-v="0">Continue</button></div>`;
-  if(ob===1){const b=S.body,n=(k,l,v,st="1")=>`<label class="fl n"><span>${l}</span><input name="${k}" type="number" inputmode="decimal" min="0" step="${st}" value="${v||""}"></label>`;
-    return dots+`<div data-form><p style="margin-top:0">These numbers set your daily calorie and protein target.</p>
-    <div class="f"><label class="fl n"><span>Sex</span><select name="sex">${opt("m","Male",b.sex==="m")}${opt("f","Female",b.sex==="f")}</select></label>${n("age","Age",b.age)}</div>
-    <div class="f">${n("h","Height, cm",b.h)}${n("kg","Weight, kg",latestWeight(),"0.1")}</div>
-    <label class="fl"><span>Goal</span><select name="goal">${GOALS.map(([v,l])=>opt(v,l,b.goal===v)).join("")}</select></label>
-    <button class="btn p w" data-a="ob" data-v="1">Continue</button><button class="btn ghost w" data-a="obs">Skip</button></div>`}
-  return dots+`<div data-form><p style="margin-top:0">Which days do you train?</p>${dayChecks(S.split.map((s,i)=>s?i:-1).filter(i=>i>=0))}
-    <label class="fl" style="margin-top:12px"><span>Split</span><select name="pre">${PRESETS.map(([v,l])=>opt(v,l)).join("")}</select></label>
-    <button class="btn p w" data-a="ob" data-v="2">Finish</button><button class="btn ghost w" data-a="obs">Skip</button></div>`;
+  if(ob===0)return dots+`<div data-form><label class="fl"><span>Language · Til · Язык</span><select data-c="pref" data-k="lang">${opt("",T("Same as my phone"),!S.lang)}${LANGS.map(([c,l])=>opt(c,l,S.lang===c)).join("")}</select></label>
+    <p style="font-size:16px">${T("Plan your days and track your money, workouts, food and learning, all in one place.")}</p>
+    <p class="lb">${T("Everything stays on this phone and works offline. Export a backup in Settings now and then.")}</p>
+    <label class="fl"><span>${T("What should we call you?")}</span><input name="name" data-i="obname" value="${esc(S.name)}" placeholder="${T("Your name")}"></label><button class="btn p w" data-a="ob" data-v="0">${T("Continue")}</button></div>`;
+  if(ob===1)return dots+`<div data-form><p style="margin-top:0">${T("These numbers set your daily calorie and protein target.")}</p>${bodyFields(S.body)}
+    <label class="fl"><span>${T("Goal")}</span><select name="goal">${GOALS.map(([v,l])=>opt(v,T(l),S.body.goal===v)).join("")}</select></label>
+    <button class="btn p w" data-a="ob" data-v="1">${T("Continue")}</button><button class="btn ghost w" data-a="obs">${T("Skip")}</button></div>`;
+  return dots+`<div data-form><p style="margin-top:0">${T("Which days do you train?")}</p>${dayChecks(S.split.map((s,i)=>s?i:-1).filter(i=>i>=0))}
+    <label class="fl" style="margin-top:12px"><span>${T("Split")}</span><select name="pre">${PRESETS.map(([v,l])=>opt(v,l.split(" / ").map(x=>T(x)).join(" / "))).join("")}</select></label>
+    <button class="btn p w" data-a="ob" data-v="2">${T("Finish")}</button><button class="btn ghost w" data-a="obs">${T("Skip")}</button></div>`;
 }
-function openWelcome(){ob=0;sheet("Welcome",welcomeSheet)}
-const obNext=()=>{ob++;if(ob>2){S.onb=true;closeSheet();toast(S.name?`You're all set, ${S.name}`:"You're all set");return}$("#sh-t").textContent=["Welcome","Your body","Your training"][ob];$("#sh-b").innerHTML=welcomeSheet()};
+function openWelcome(){ob=0;sheet("",welcomeSheet)}
+const obNext=()=>{ob++;if(ob>2){S.onb=true;closeSheet();toast(S.name?T("You're all set, {x}",{x:S.name}):T("You're all set"));return}$("#sh-b").innerHTML=welcomeSheet()};
 A.ob=(b,f,F)=>{const st=+b.dataset.v;
   if(st===0)S.name=F.v("name").slice(0,40);
-  if(st===1){Object.assign(S.body,{sex:F.v("sex"),age:F.n("age"),h:F.n("h"),goal:F.v("goal")});const kg=F.n("kg");if(kg>=20&&kg!==latestWeight()){S.weights=S.weights.filter(w=>w.d!==today());S.weights.push({id:uid(),d:today(),kg})}}
-  if(st===2){const days=F.all("rd").map(Number).sort(),pre=F.v("pre").split("|").filter(Boolean);
-    if(days.length)S.split=DN.map((_,i)=>{const j=days.indexOf(i);return j<0?"":pre.length?pre[j%pre.length]:S.split[i]||"Workout"})}
+  if(st===1)saveBody(F);
+  if(st===2){const days=F.all("rd").map(Number).sort(),pre=F.v("pre").split("|").filter(Boolean).map(x=>T(x));   // split names are saved in the chosen language
+    if(days.length)S.split=DN.map((_,i)=>{const j=days.indexOf(i);return j<0?"":pre.length?pre[j%pre.length]:S.split[i]||T("Workout")})}
   save();obNext();if(!$("#sheet").open)render();return false};
 A.obs=()=>{obNext();return false};
 A.welcome=()=>{openWelcome();return false};
+C.obname=el=>{S.name=el.value.trim().slice(0,40)};
 $("#sheet").addEventListener("close",()=>{if(!S.onb&&ob<=2){S.onb=true;save()}});
 
 render();
@@ -90,5 +90,5 @@ if(!S.onb)openWelcome();
 if("serviceWorker" in navigator&&location.protocol==="https:"){
   const had=!!navigator.serviceWorker.controller;
   navigator.serviceWorker.register("sw.js");
-  navigator.serviceWorker.addEventListener("controllerchange",()=>{if(had)toast("New version ready",{label:"Reload",fn:()=>location.reload()})});
+  navigator.serviceWorker.addEventListener("controllerchange",()=>{if(had)toast(T("New version ready"),{label:T("Reload"),fn:()=>location.reload()})});
 }

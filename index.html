@@ -5,29 +5,25 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#151514" media="(prefers-color-scheme: dark)">
-<meta name="description" content="Plan your days, track spending, workouts, calories and learning.">
+<meta name="description" content="TrackMe: plan your days, track spending, workouts, calories and learning.">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="stylesheet" href="css/app.css">
-<title>Life Planner</title>
+<title>TrackMe</title>
 </head>
 <body data-t="today">
 <main class="wrap" id="main"></main>
-<nav id="tabs" aria-label="Sections">
-  <button data-a="tab" data-t="today">__home__<span>Today</span></button>
-  <button data-a="tab" data-t="spend">__wallet__<span>Money</span></button>
-  <button data-a="add" class="fab" aria-label="Add">__plus__</button>
-  <button data-a="tab" data-t="fit">__heartbeat__<span>Fitness</span></button>
-  <button data-a="tab" data-t="learn">__book__<span>Learn</span></button>
-</nav>
+<nav id="tabs"></nav>
 <input type="date" id="jump" aria-hidden="true" tabindex="-1">
 <input type="file" id="file" accept=".json,application/json,text/plain" hidden>
 <dialog id="dlg"></dialog>
-<dialog id="sheet" class="sheet"><div class="sh-grab"></div><div class="sh-h"><b id="sh-t"></b><button class="ib" data-a="shx" aria-label="Close">__x__</button></div><div id="sh-b"></div></dialog>
+<dialog id="sheet" class="sheet"><div class="sh-grab"></div><div class="sh-h"><b id="sh-t"></b><button class="ib" id="sh-x" data-a="shx" aria-label="Close">__x__</button></div><div id="sh-b"></div></dialog>
 <div id="toast" role="status"></div>
 <script src="js/vendor/chart.umd.min.js"></script>
 <script src="js/icons.js"></script>
+<script src="js/i18n.js"></script>
+<script src="js/i18n-dict.js"></script>
 <script src="js/core.js"></script>
 <script src="js/plan.js"></script>
 <script src="js/money.js"></script>
