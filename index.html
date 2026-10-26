@@ -3,7 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#1f8a77">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#151514" media="(prefers-color-scheme: dark)">
 <meta name="description" content="Plan your days, track spending, workouts, calories and learning.">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-192.png">
@@ -11,34 +12,29 @@
 <link rel="stylesheet" href="css/app.css">
 <title>Life Planner</title>
 </head>
-<body data-t="plan">
-<header class="top">
-  <span class="brand">Life Planner</span>
-  <b id="htitle"></b>
-  <nav id="tabs">
-    <button data-a="tab" data-t="plan"><span class="i">📅</span>Plan</button><button data-a="tab" data-t="spend"><span class="i">💸</span>Money</button><button data-a="tab" data-t="work"><span class="i">💪</span>Workout</button><button data-a="tab" data-t="food"><span class="i">🥗</span>Food</button><button data-a="tab" data-t="learn"><span class="i">📚</span>Learn</button><button data-a="tab" data-t="set" class="tset"><span class="i">⚙️</span>Settings</button>
-  </nav>
-  <div class="wk" id="wknav">
-    <button data-a="nav" data-n="-1" aria-label="Previous">‹</button>
-    <button id="range" data-a="pick" title="Jump to a date"></button>
-    <button data-a="now" id="today">Today</button>
-    <button data-a="nav" data-n="1" aria-label="Next">›</button>
-  </div>
-  <button class="ib gear" data-a="tab" data-t="set" aria-label="Settings">⚙️</button>
-  <input type="date" id="jump" aria-hidden="true" tabindex="-1">
-</header>
+<body data-t="today">
 <main class="wrap" id="main"></main>
+<nav id="tabs" aria-label="Sections">
+  <button data-a="tab" data-t="today">__home__<span>Today</span></button>
+  <button data-a="tab" data-t="spend">__wallet__<span>Money</span></button>
+  <button data-a="add" class="fab" aria-label="Add">__plus__</button>
+  <button data-a="tab" data-t="fit">__heartbeat__<span>Fitness</span></button>
+  <button data-a="tab" data-t="learn">__book__<span>Learn</span></button>
+</nav>
+<input type="date" id="jump" aria-hidden="true" tabindex="-1">
 <input type="file" id="file" accept=".json,application/json,text/plain" hidden>
 <dialog id="dlg"></dialog>
-<dialog id="sheet" class="sheet"><div class="sh-h"><b id="sh-t"></b><button class="ib" data-a="shx" aria-label="Close">✕</button></div><div id="sh-b"></div></dialog>
-<div id="toast"></div>
+<dialog id="sheet" class="sheet"><div class="sh-grab"></div><div class="sh-h"><b id="sh-t"></b><button class="ib" data-a="shx" aria-label="Close">__x__</button></div><div id="sh-b"></div></dialog>
+<div id="toast" role="status"></div>
 <script src="js/vendor/chart.umd.min.js"></script>
+<script src="js/icons.js"></script>
 <script src="js/core.js"></script>
 <script src="js/plan.js"></script>
 <script src="js/money.js"></script>
 <script src="js/workout.js"></script>
 <script src="js/food.js"></script>
 <script src="js/learn.js"></script>
+<script src="js/add.js"></script>
 <script src="js/settings.js"></script>
 <script src="js/app.js"></script>
 </body>

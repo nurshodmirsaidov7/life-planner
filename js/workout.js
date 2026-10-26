@@ -1,89 +1,97 @@
 "use strict";
-// ---------- Workout: bodyweight reps, gym sets (kg × reps), runs, weekly split ----------
+// ---------- Fitness › Workout: bodyweight reps, gym sets (kg × reps), runs, weekly split ----------
 const reps=w=>Object.values(w.r).reduce((s,v)=>s+v,0);
 const exReps=id=>w=>w.r[id]||0;
 const liftName=id=>(S.lifts.find(l=>l.id===id)||{name:"?"}).name;
+const exName=id=>(S.ex.find(e=>e.id===id)||{name:id}).name;
 function pace(m,k){if(!k)return"—";const p=m/k;let a=Math.floor(p),s=Math.round((p-a)*60);if(s===60){a++;s=0}return a+":"+pad(s)+" /km"}
 const SPLITS=["Chest & Biceps","Back & Triceps","Shoulders","Legs","Upper body","Lower body","Full body","Push","Pull","Run / Cardio","Street workout"];
 let wform={lift:"",kg:"",reps:"",n:1},progLift="";
+const workDays=()=>new Set([...S.wo,...S.sets,...S.runs].map(x=>x.d));
+const topSet=a=>[...a].sort((x,y)=>y.kg-x.kg||y.reps-x.reps)[0];
+function prevSession(lift,before){const s=S.sets.filter(x=>x.lift===lift&&x.d<before);if(!s.length)return null;const d=s.reduce((m,x)=>x.d>m?x.d:m,"");return{d,sets:s.filter(x=>x.d===d)}}
 
-function lastSession(lift,before){
-  const s=S.sets.filter(x=>x.lift===lift&&x.d<before).sort((a,b)=>a.d<b.d?1:-1);
-  if(!s.length)return"";const d=s[0].d,x=s.filter(y=>y.d===d);
-  return `Last time (${dayLbl(dt(d))}): ${x.map(y=>y.kg+"×"+y.reps).join(", ")}`;
+// Log forms, shared by the quick-add sheet.
+function workForm(kind,d0){
+  const act=S.ex.filter(e=>e.on),lifts=S.lifts.filter(l=>l.on);
+  if(!lifts.some(l=>l.id===wform.lift))wform.lift=(lifts[0]||{}).id||"";
+  const num=(n,p,v="")=>`<label class="fl n"><span>${p}</span><input name="${n}" type="number" inputmode="decimal" min="0" step="any" value="${v}"></label>`;
+  const date=`<label class="fl"><span>Date</span><input type="date" name="d" value="${d0}"></label>`;
+  if(kind==="reps")return act.length?`<div class="f">${act.map(e=>num("r_"+e.id,esc(e.name))).join("")}</div>${date}<label class="fl"><span>Note (optional)</span><input name="n" placeholder="Back day"></label><button class="btn p w" data-a="aw">Add reps</button>
+    <p class="lb">Adds to that day's totals if you already logged something.</p>`:'<div class="empty">Add bodyweight exercises in Settings first.</div>';
+  if(kind==="gym"){const p=prevSession(wform.lift,"9999");
+    return lifts.length?`<label class="fl"><span>Exercise</span><select name="lift" data-c="lift">${lifts.map(l=>opt(l.id,l.name,l.id===wform.lift)).join("")}</select></label>
+    <div class="f">${num("kg","kg",wform.kg)}${num("reps","Reps",wform.reps)}${num("n","Sets",wform.n||1)}</div>${date}
+    <p class="lb">${p?`Last time (${dayLbl(dt(p.d))}): ${p.sets.map(s=>s.kg+"×"+s.reps).join(", ")}`:"Logs that many identical sets."}</p><button class="btn p w" data-a="as">Add sets</button>`:'<div class="empty">Add gym exercises in Settings first.</div>'}
+  return `<div class="f">${num("km","Distance, km")}${num("min","Time, minutes")}</div>${date}<label class="fl"><span>Note (optional)</span><input name="n" placeholder="Felt good"></label><button class="btn p w" data-a="ar">Add run</button>`;
 }
 
-V.work={title:"Workout",nav:"week",render(){
-  const D=wkD(),tk=today(),W=S.wo.filter(w=>inR(w.d,D)),R=S.runs.filter(r=>inR(r.d,D)),G=S.sets.filter(s=>inR(s.d,D));
-  const byD={};S.wo.forEach(w=>byD[w.d]=(byD[w.d]||0)+reps(w));
-  const dv=Object.values(byD),km=sum(S.runs,"km"),mn=sum(S.runs,"min"),act=S.ex.filter(e=>e.on),cols=S.ex.filter(e=>e.on||S.wo.some(w=>w.r[e.id]));
-  const lifts=S.lifts.filter(l=>l.on);
-  if(!lifts.some(l=>l.id===wform.lift))wform.lift=(lifts[0]||{}).id||"";
-  const d0=dflt(D);
-  // split strip
-  const strip=`<div class="card mb"><h2><span>📋 Weekly split</span><button class="sm" data-a="split">Edit</button></h2><div class="chips">${D.map((d,i)=>{const k=key(d);
-    return `<span class="chip ${k===tk?"soft":""}" style="${k===tk?"font-weight:700;":""}">${DN[i]} · ${S.split[i]?esc(S.split[i]):'<span class="mute">Rest</span>'}</span>`}).join("")}</div></div>`;
-  // log forms
-  const num=(n,p,v="")=>`<input name="${n}" class="n" type="number" inputmode="decimal" min="0" step="any" placeholder="${p}" value="${v}" aria-label="${p}">`;
-  const forms={
-    reps:`<input type="date" name="d" value="${d0}" style="width:100%" aria-label="Date">${act.length?`<div class="exs">${act.map(e=>`<label><small>${esc(e.name)}</small><input name="r_${e.id}" type="number" inputmode="numeric" min="0" step="any" placeholder="0"></label>`).join("")}</div>`:'<div class="empty">No exercises. Add some in Settings.</div>'}
-      <div class="f" style="margin-top:6px"><input name="n" placeholder="Note (optional)" style="flex:2 1 160px"><button class="p" data-a="aw">Add to day</button></div><small class="mute">Adds to that day's totals if you already logged something.</small>`,
-    gym:lifts.length?`<div class="f"><input type="date" name="d" value="${d0}" aria-label="Date"><select name="lift" data-c="lift" aria-label="Exercise" style="flex:2 1 160px">${lifts.map(l=>opt(l.id,l.name,l.id===wform.lift)).join("")}</select></div>
-      <div class="f">${num("kg","kg",wform.kg)}${num("reps","Reps",wform.reps)}<label class="n" style="display:flex;align-items:center;gap:6px"><span class="mute" style="font-size:13px">Sets</span><input name="n" type="number" inputmode="numeric" min="1" value="${wform.n||1}" style="width:100%"></label><button class="p x" data-a="as">Add</button></div>
-      <small class="mute">${esc(lastSession(wform.lift,d0))||"Logs that many identical sets. Use Settings to add exercises."}</small>`:'<div class="empty">No gym exercises. Add some in Settings.</div>',
-    run:`<div class="f"><input type="date" name="d" value="${d0}" class="w" aria-label="Date">${num("km","km")}${num("min","Minutes")}</div><div class="f"><input name="n" placeholder="Note (optional)" style="flex:2 1 160px"><button class="p" data-a="ar">Add run</button></div>`};
-  // this week's log
-  const log=D.map(d=>{const k=key(d),a=W.filter(w=>w.d===k),r=R.filter(x=>x.d===k),g=G.filter(s=>s.d===k);if(!a.length&&!r.length&&!g.length)return"";
-    const gl=[...new Set(g.map(s=>s.lift))].map(l=>{const x=g.filter(s=>s.lift===l);return `<div class="row"><span class="g">🏋️ <b>${esc(liftName(l))}</b> <small class="mute">${plural(x.length,"set")} · ${Math.round(sum(x,s=>s.kg*s.reps))} kg vol.</small><br><span class="chips" style="margin-top:4px">${x.map(s=>`<button class="chip sm" data-a="ds" data-id="${s.id}" title="Delete this set">${s.kg}×${s.reps} ✕</button>`).join("")}</span></span></div>`}).join("");
-    return `<div class="dh"><span>${dayLbl(d)}</span><small class="mute">${esc(S.split[(d.getDay()+6)%7])}</small></div>`+
-    a.map(w=>`<div class="row"><span class="g">💪 ${Object.entries(w.r).map(([k,v])=>`${v} ${esc((S.ex.find(e=>e.id===k)||{name:k}).name)}`).join(" · ")} <small class="mute">${esc(w.n)}</small></span><b>${reps(w)}</b><button class="ib" data-a="dw" data-id="${w.id}" aria-label="Delete">✕</button></div>`).join("")+gl+
-    r.map(x=>`<div class="row"><span class="g">🏃 ${x.km} km in ${x.min} min · ${pace(x.min,x.km)} <small class="mute">${esc(x.n)}</small></span><button class="ib" data-a="dr" data-id="${x.id}" aria-label="Delete">✕</button></div>`).join("")}).join("");
+function vWork(){
+  const D=wkD(),tk=today(),W=S.wo.filter(w=>inR(w.d,D)),R=S.runs.filter(r=>inR(r.d,D)),G=S.sets.filter(s=>inR(s.d,D)),days=workDays();
+  const dayK=inR(tk,D)?tk:key(D[6]),dayI=wdi(dayK),TG=S.sets.filter(s=>s.d===dayK),TW=S.wo.filter(w=>w.d===dayK),TR=S.runs.filter(r=>r.d===dayK);
+  const act=S.ex.filter(e=>e.on),cols=S.ex.filter(e=>e.on||S.wo.some(w=>w.r[e.id])),ws=weekStreak(days);
+  // the day's gym exercises with one-tap "+ set"
+  const lifts=[...new Set(TG.map(s=>s.lift))].map(l=>{const x=TG.filter(s=>s.lift===l),p=prevSession(l,dayK),top=topSet(x),pt=p&&topSet(p.sets),dk=pt?r1(top.kg-pt.kg):0;
+    return `<div class="rw" style="flex-wrap:wrap"><span class="g"><b style="font-weight:600">${esc(liftName(l))}</b>${p?`<div class="meta">last: ${p.sets.map(s=>s.kg+"×"+s.reps).join(", ")}${dk?` · <span class="${dk>0?"good":"bad"}">${dk>0?"▲ +":"▼ "}${dk} kg</span>`:""}</div>`:""}</span>
+    <span class="chipset" style="width:100%">${x.map(s=>`<button class="chip" data-a="ds" data-id="${s.id}" title="Delete this set">${s.kg}×${s.reps} ${ic("x","s")}</button>`).join("")}<button class="chip add" data-a="as1" data-l="${l}" data-d="${dayK}">${ic("plus","s")} set</button></span></div>`}).join("");
+  const rep=TW.map(w=>`<div class="rw"><span class="ci">${ic("barbell","s")}</span><span class="g">${Object.entries(w.r).map(([k,v])=>`${v} ${esc(exName(k))}`).join(" · ")}${w.n?`<div class="meta">${esc(w.n)}</div>`:""}</span><button class="ib" data-a="dw" data-id="${w.id}" aria-label="Delete">${ic("x","s")}</button></div>`).join("")
+    +TR.map(x=>`<div class="rw"><span class="ci">${ic("run","s")}</span><span class="g">${x.km} km in ${x.min} min<div class="meta">${pace(x.min,x.km)}${x.n?" · "+esc(x.n):""}</div></span><button class="ib" data-a="dr" data-id="${x.id}" aria-label="Delete">${ic("x","s")}</button></div>`).join("");
   // charts
-  const first=[...S.wo,...S.runs,...S.sets].map(x=>x.d).sort()[0];
-  const nw=first?Math.max(4,Math.min(10,Math.round((mon(cur)-mon(dt(first)))/6048e5)+1)):4;   // from the first logged week, 4–10 weeks
-  const wks=[...Array(nw)].map((_,i)=>addD(mon(cur),-7*(nw-1-i))),wl=wks.map(w=>sh(w,{day:"numeric",month:"short"}));
-  const inW=w=>x=>inR(x.d,wd(w));
-  const repsC=bars(wl,cols.map(e=>({label:e.name,data:wks.map(w=>sum(S.wo.filter(inW(w)),exReps(e.id))),color:pal(S.ex.indexOf(e))})),{stacked:true,legend:cols.length>1,label:"Reps per week by exercise"});
-  const kmC=bars(wl,[{label:"Distance",data:wks.map(w=>r1(sum(S.runs.filter(inW(w)),"km"))),color:pal(2)}],{fmt:v=>v+" km",label:"Running km per week"});
+  const first=[...days].sort()[0];
+  const nw=first?Math.max(4,Math.min(10,Math.round((mon(cur)-mon(dt(first)))/6048e5)+1)):4;
+  const wks=[...Array(nw)].map((_,i)=>addD(mon(cur),-7*(nw-1-i))),wl=wks.map(w=>sh(w,{day:"numeric",month:"short"})),inWk=w=>x=>inR(x.d,wd(w));
+  const repsC=bars(wl,cols.map(e=>({label:e.name,data:wks.map(w=>sum(S.wo.filter(inWk(w)),exReps(e.id))),color:pal(S.ex.indexOf(e))})),{stacked:true,legend:cols.length>1,label:"Reps per week by exercise"});
+  const kmC=bars(wl,[{label:"Distance",data:wks.map(w=>r1(sum(S.runs.filter(inWk(w)),"km")))}],{fmt:v=>v+" km",label:"Running km per week"});
   const used=S.lifts.filter(l=>S.sets.some(s=>s.lift===l.id));
   if(!used.some(l=>l.id===progLift))progLift=(used.find(l=>l.id===wform.lift)||used[0]||{}).id||"";
   let prog="";
-  if(progLift){const days=[...new Set(S.sets.filter(s=>s.lift===progLift).map(s=>s.d))].sort().slice(-15);
-    const top=days.map(d=>S.sets.filter(s=>s.lift===progLift&&s.d===d).sort((a,b)=>b.kg-a.kg||b.reps-a.reps)[0]);
-    prog=chart(lines(days.map(d=>sh(dt(d),{day:"numeric",month:"short"})),[{label:"Heaviest set",data:top.map(s=>s.kg),color:pal(1)}],
-      {zero:false,label:"Heaviest set per session",fmt:(v,c)=>`${v} kg × ${top[c.dataIndex].reps}`}),200);}
+  if(progLift){const ds=[...new Set(S.sets.filter(s=>s.lift===progLift).map(s=>s.d))].sort().slice(-15),top=ds.map(d=>topSet(S.sets.filter(s=>s.lift===progLift&&s.d===d)));
+    prog=chart(lines(ds.map(d=>sh(dt(d),{day:"numeric",month:"short"})),[{label:"Heaviest set",data:top.map(s=>s.kg)}],{zero:false,label:"Heaviest set per session",fmt:(v,c)=>`${v} kg × ${top[c.dataIndex].reps}`}),180)}
   const hist=wks.slice().reverse().map(w=>{const X=wd(w),a=S.wo.filter(o=>inR(o.d,X)),r=S.runs.filter(o=>inR(o.d,X));
     return `<tr class="${S.goal&&r.length>=S.goal?"hit":""}"><td>${sh(w,{day:"numeric",month:"short"})}</td>${cols.map(e=>`<td>${sum(a,exReps(e.id))}</td>`).join("")}<td><b>${sum(a,reps)}</b></td><td>${S.sets.filter(o=>inR(o.d,X)).length}</td><td>${r.length}/${S.goal}</td><td>${sum(r,"km").toFixed(1)}</td></tr>`}).join("");
-  return strip+`<div class="stats">${stat("Reps this week",sum(W,reps),act.map(e=>`${sum(W,exReps(e.id))} ${esc(e.name)}`).join(" · "))}
-  ${stat("Gym this week",plural(G.length,"set"),G.length?Math.round(sum(G,s=>s.kg*s.reps)).toLocaleString("en-US")+" kg volume":"")}
-  ${stat("Runs this week",R.length+" / "+S.goal,S.goal&&R.length>=S.goal?"Goal hit 🎉":sum(R,"km").toFixed(1)+" km · "+pace(sum(R,"min"),sum(R,"km")))}
-  ${stat("All-time",sum(dv,x=>x)+" reps",km.toFixed(1)+" km run · "+pace(mn,km))}</div>
-  <div class="card mb"><div class="mute" style="margin-bottom:4px">Run goal this week · ${R.length} of ${S.goal}</div>${bar(S.goal?R.length/S.goal*100:0)}</div>
-  <div class="two"><div class="card soft" data-form><h2>Log a workout</h2>${seg("wlog",[["reps","💪 Reps"],["gym","🏋️ Gym"],["run","🏃 Run"]],mode.wlog)}${forms[mode.wlog]}</div>
-  <div class="card"><h2>This week's log</h2>${log||'<div class="empty">Nothing logged this week.</div>'}</div></div>
-  <div class="two"><div class="card"><h2>Reps per week</h2>${chart(repsC,220)}</div><div class="card"><h2>Running per week</h2>${chart(kmC,220)}</div></div>
-  <div class="two"><div class="card"><h2><span>Strength progress</span>${used.length?`<select data-c="plift" aria-label="Exercise" style="max-width:55%">${used.map(l=>opt(l.id,l.name,l.id===progLift)).join("")}</select>`:""}</h2>${prog||'<div class="empty">Log gym sets to see your strength progress here.</div>'}</div>
-  <div class="card"><h2>Week by week <small class="mute">green = run goal hit</small></h2><div class="sc"><table><tr><th>Week of</th>${cols.map(e=>`<th>${esc(e.name)}</th>`).join("")}<th>Reps</th><th>Sets</th><th>Runs</th><th>km</th></tr>${hist}</table></div></div></div>`;
-}};
-
-function splitSheet(){
-  return `<div data-form><p class="mute" style="margin-top:0">What do you train each day? Leave a day empty for rest. It shows on your Plan and here.</p>
-  ${DNL.map((n,i)=>`<label class="fl"><span>${n}</span><input name="s${i}" list="spl" value="${esc(S.split[i])}" placeholder="Rest"></label>`).join("")}
-  <datalist id="spl">${SPLITS.map(s=>`<option value="${esc(s)}">`).join("")}</datalist><button class="p" data-a="splitsave" style="width:100%;margin-top:8px">Save split</button></div>`;
+  return `<div class="stack">
+  ${tile(`<div class="wdots">${D.map((d,i)=>{const k=key(d);return `<span class="${days.has(k)?"on":""} ${k===tk?"now":""}" title="${DNL[i]}: ${esc(S.split[i]||"Rest")}">${DN[i][0]}</span>`}).join("")}</div>
+    <div class="rw" style="border:0;padding-bottom:0;min-height:0;margin-top:6px"><span class="g lb">${plural(D.filter(d=>days.has(key(d))).length,"training day")} ·${R.length}/${S.goal} runs</span><button class="btn ghost sm" data-a="split">${ic("calendar-week","s")} Split</button></div>`)}
+  ${tile(`<h2><span>${dayK===tk?"Today":dayLbl(dt(dayK))} · ${S.split[dayI]?esc(S.split[dayI]):"Rest day"}</span><button class="btn sm p" data-a="qa" data-k="work">${ic("plus","s")} Log</button></h2>
+    ${lifts+rep||'<div class="empty">Nothing logged yet. Tap Log to add sets, reps or a run.</div>'}`)}
+  <div class="grid2">${tile(`<div class="lb">Reps this week</div><div class="big">${sum(W,reps)}</div><div class="meta">${act.map(e=>`${sum(W,exReps(e.id))} ${esc(e.name)}`).join(" · ")}</div>`,"t")}
+  ${tile(`<div class="lb">Gym this week</div><div class="big">${plural(G.length,"set")}</div><div class="meta">${Math.round(sum(G,s=>s.kg*s.reps)).toLocaleString("en-US")} kg volume</div>`,"t")}
+  ${tile(`<div class="lb">Runs</div><div class="big">${R.length} / ${S.goal}</div>${bar(S.goal?R.length/S.goal*100:0)}`,"t")}
+  ${tile(`<div class="lb">Distance</div><div class="big">${sum(R,"km").toFixed(1)} km</div><div class="meta">${pace(sum(R,"min"),sum(R,"km"))}</div>`,"t")}</div>
+  ${tile(`<h2><span>Strength progress</span>${used.length?`<select data-c="plift" aria-label="Exercise" style="width:auto;max-width:55%;padding:6px 10px">${used.map(l=>opt(l.id,l.name,l.id===progLift)).join("")}</select>`:""}</h2>${prog||'<div class="empty">Log gym sets to see your strength grow here.</div>'}`)}
+  ${tile(`<h2>Reps per week</h2>${chart(repsC,190)}`)}
+  ${tile(`<h2>Running per week</h2>${chart(kmC,160)}`)}
+  ${tile(`<details><summary>Week by week table</summary><div class="sc" style="margin-top:8px"><table><tr><th>Week</th>${cols.map(e=>`<th>${esc(e.name)}</th>`).join("")}<th>Reps</th><th>Sets</th><th>Runs</th><th>km</th></tr>${hist}</table></div></details>`)}
+  </div>`;
 }
 
-A.wlog=b=>{mode.wlog=b.dataset.v};
+function splitSheet(){
+  return `<div data-form><p class="lb" style="margin-top:0">What do you train each day? Leave a day empty for rest.</p>
+  ${DNL.map((n,i)=>`<label class="fl"><span>${n}</span><input name="s${i}" list="spl" value="${esc(S.split[i])}" placeholder="Rest"></label>`).join("")}
+  <datalist id="spl">${SPLITS.map(s=>`<option value="${esc(s)}">`).join("")}</datalist><button class="btn p w" data-a="splitsave">Save split</button></div>`;
+}
+
+V.fit={title:"Fitness",nav:()=>mode.fit==="work"?"week":"day",render(){
+  const w=mode.fit==="work",ws=weekStreak(workDays());
+  return head(w?"Workout":"Food",{nav:w?"week":"day",right:w&&ws>=2?`<span class="badge fire">${ic("flame","s")} ${ws} wk</span>`:""})+seg("fmode",[["work","Workout"],["food","Food"]],mode.fit)+(w?vWork():vFood());
+}};
+
+A.fmode=b=>{mode.fit=b.dataset.v;anim=true};
 A.aw=(b,f,F)=>{const d=F.v("d"),r={};S.ex.filter(x=>x.on).forEach(x=>{const n=F.n("r_"+x.id);if(n)r[x.id]=n});
-  if(!d||!Object.keys(r).length){toast("Enter at least one number");return false}lastD=d;
+  if(!d||!Object.keys(r).length){toast("Enter at least one number");return false}lastD=d;snap();
   const x=S.wo.find(o=>o.d===d);
-  if(x){Object.entries(r).forEach(([k,n])=>x.r[k]=(x.r[k]||0)+n);if(F.v("n"))x.n=(x.n?x.n+"; ":"")+F.v("n")}else S.wo.push({id:uid(),d,r,n:F.v("n")});toast(Object.values(r).reduce((a,b)=>a+b,0)+" reps logged")};
-A.ar=(b,f,F)=>{if(!F.v("d")||!F.n("km")||!F.n("min")){toast("Enter km and minutes");return false}lastD=F.v("d");S.runs.push({id:uid(),d:F.v("d"),km:F.n("km"),min:F.n("min"),n:F.v("n")});toast("Run logged")};
+  if(x){Object.entries(r).forEach(([k,n])=>x.r[k]=(x.r[k]||0)+n);if(F.v("n"))x.n=(x.n?x.n+"; ":"")+F.v("n")}else S.wo.push({id:uid(),d,r,n:F.v("n")});
+  closeSheet();undoToast(Object.values(r).reduce((a,b)=>a+b,0)+" reps logged")};
+A.ar=(b,f,F)=>{if(!F.v("d")||!F.n("km")||!F.n("min")){toast("Enter distance and time");return false}lastD=F.v("d");snap();
+  S.runs.push({id:uid(),d:F.v("d"),km:F.n("km"),min:F.n("min"),n:F.v("n")});closeSheet();undoToast("Run logged")};
 A.as=(b,f,F)=>{const lift=F.v("lift"),kg=F.n("kg"),rp=F.n("reps"),n=Math.min(20,Math.max(1,Math.round(F.n("n")||1)));
-  if(!lift||!rp||!F.v("d")){toast("Enter kg and reps");return false}lastD=F.v("d");
-  for(let i=0;i<n;i++)S.sets.push({id:uid(),d:F.v("d"),lift,kg,reps:rp});wform={lift,kg:F.v("kg"),reps:F.v("reps"),n};toast(`${plural(n,"set")} of ${liftName(lift)} logged`)};
-A.dw=b=>{S.wo=S.wo.filter(x=>x.id!==b.dataset.id)};
-A.dr=b=>{S.runs=S.runs.filter(x=>x.id!==b.dataset.id)};
-A.ds=b=>{S.sets=S.sets.filter(x=>x.id!==b.dataset.id)};
+  if(!lift||!rp||!F.v("d")){toast("Enter kg and reps");return false}lastD=F.v("d");snap();
+  for(let i=0;i<n;i++)S.sets.push({id:uid(),d:F.v("d"),lift,kg,reps:rp});wform={lift,kg:F.v("kg"),reps:F.v("reps"),n};closeSheet();undoToast(`${plural(n,"set")} of ${liftName(lift)} logged`)};
+A.as1=b=>{const l=b.dataset.l,d=b.dataset.d,last=S.sets.filter(s=>s.lift===l&&s.d<=d).pop();if(!last)return false;snap();
+  S.sets.push({id:uid(),d,lift:l,kg:last.kg,reps:last.reps});try{navigator.vibrate&&navigator.vibrate(10)}catch(e){}undoToast(`${last.kg}×${last.reps} added`)};
+A.dw=b=>{snap();S.wo=S.wo.filter(x=>x.id!==b.dataset.id);undoToast("Reps deleted")};
+A.dr=b=>{snap();S.runs=S.runs.filter(x=>x.id!==b.dataset.id);undoToast("Run deleted")};
+A.ds=b=>{snap();S.sets=S.sets.filter(x=>x.id!==b.dataset.id);undoToast("Set deleted")};
 A.split=()=>{sheet("Weekly split",splitSheet);return false};
 A.splitsave=(b,f,F)=>{S.split=DN.map((_,i)=>F.v("s"+i));closeSheet();toast("Split saved")};
 C.lift=el=>{const f=el.closest("[data-form]"),g=n=>f.querySelector(`[name=${n}]`).value;wform={lift:el.value,kg:g("kg"),reps:g("reps"),n:g("n")}};

@@ -1,8 +1,10 @@
 "use strict";
-// ---------- Plan: day / week / month, weekly goals, repeating tasks ----------
+// ---------- Today: rings, tasks (day / week / month), weekly goals, repeating tasks ----------
 const task=id=>S.tasks.find(t=>t.id===id);
 const tsort=a=>[...a].sort((x,y)=>{const a1=x.tm||"~",b1=y.tm||"~";return a1<b1?-1:a1>b1?1:(y.p-x.p)});
 const recDays=d=>{const s=[...d].sort().join("");return s==="0123456"?"Every day":s==="01234"?"Weekdays":s==="56"?"Weekends":d.slice().sort().map(i=>DN[i]).join(", ")};
+const trainedOn=k=>S.wo.some(w=>w.d===k)||S.sets.some(s=>s.d===k)||S.runs.some(r=>r.d===k);
+let popId="";
 
 // Repeating tasks become real tasks the first time a day that matches them is shown.
 function ensureRec(D){
@@ -14,123 +16,115 @@ function ensureRec(D){
 }
 function skipRec(t){const r=t.rid&&S.rec.find(x=>x.id===t.rid);if(r&&!r.skip.includes(t.d))r.skip.push(t.d)}
 
+// Task row: tap the box to finish, tap the text to edit, swipe right = done, swipe left = tomorrow.
 function trow(t){
   const L=t.lid&&S.learn.find(l=>l.id===t.lid);
-  return `<div class="row ${t.x?"done":""}"><label class="ck"><input type="checkbox" data-a="tg" data-id="${t.id}" ${t.x?"checked":""} aria-label="Done"></label>
-  <span class="g tt" data-a="te" data-id="${t.id}">${t.tm?`<b class="mute">${t.tm}</b> `:""}${t.p?"⭐ ":""}${esc(t.t)}${t.rid?'<span class="tag" title="Repeating">🔁</span>':""}${L?`<span class="tag">📚 ${esc(L.name)}${t.lu?" +"+t.lu:""}</span>`:""}</span>
-  <button class="ib" data-a="mv" data-id="${t.id}" title="Move to next day" aria-label="Move to next day">↪</button><button class="ib" data-a="dt" data-id="${t.id}" aria-label="Delete">✕</button></div>`;
+  const meta=[t.p?ic("star","s")+" Important":"",t.rid?ic("repeat","s")+" Repeats":"",L?ic("book","s")+" "+esc(L.name)+(t.lu?" +"+t.lu:""):""].filter(Boolean).join(" · ");
+  return `<div class="sw" data-r="tg" data-l="mv" data-id="${t.id}"><div class="sw-bg"><span class="bl">${ic("check","s")} ${t.x?"Not done":"Done"}</span><span class="br">Tomorrow ${ic("arrow-forward-up","s")}</span></div>
+  <div class="sw-fg"><div class="rw ${t.x?"done":""}"><button class="cb ${t.x?"on":""} ${popId===t.id?"pop":""}" data-a="tg" data-id="${t.id}" aria-label="${t.x?"Mark as not done":"Mark as done"}" aria-pressed="${t.x}">${ic("check")}</button>
+  <div class="g tap" data-a="te" data-id="${t.id}"><span class="tt">${esc(t.t)}</span>${meta?`<div class="meta">${meta}</div>`:""}</div>${t.tm?`<span class="meta">${t.tm}</span>`:""}</div></div></div>`;
 }
+const addRow=(k,ph="Add a task")=>`<div class="addrow" data-form data-k="${k}"><input name="t" placeholder="${ph}" enterkeyhint="done" aria-label="New task"><button class="ib" data-a="at" aria-label="Add task">${ic("plus")}</button></div>`;
 function learnFields(lid,lu){
   const L=S.learn.filter(l=>l.st!=="done"||l.id===lid);
   if(!L.length)return"";
-  return `<div class="f"><label class="fl" style="flex:2 1 170px"><span>📚 Counts toward learning</span><select name="lid">${opt("","Not linked",!lid)}${L.map(l=>opt(l.id,l.name,l.id===lid)).join("")}</select></label>
+  return `<div class="f"><label class="fl" style="flex:2 1 170px"><span>Counts toward learning</span><select name="lid">${opt("","Not linked",!lid)}${L.map(l=>opt(l.id,l.name,l.id===lid)).join("")}</select></label>
   <label class="fl n"><span>Units when done</span><input name="lu" type="number" inputmode="decimal" min="0" step="any" value="${lu||1}"></label></div>`;
 }
-function goalsCard(){
+function goalsTile(){
   const w=key(mon(cur)),G=S.goals.filter(g=>g.d===w);
-  return `<div class="card soft mb" data-form data-w="${w}"><h2><span>🎯 Goals this week</span><small class="mute">${G.filter(g=>g.x).length}/${G.length} done</small></h2>
-  ${G.map(g=>`<div class="row ${g.x?"done":""}"><label><input type="checkbox" data-a="gt" data-id="${g.id}" ${g.x?"checked":""}><span class="tt">${esc(g.t)}</span></label><button class="ib" data-a="gd" data-id="${g.id}" aria-label="Delete">✕</button></div>`).join("")||'<div class="empty">No goals for this week yet.</div>'}
-  <div class="f" style="margin-top:6px"><input name="g" placeholder="Add a goal for the week…" enterkeyhint="done"><button class="p x" data-a="ag" aria-label="Add goal">+</button></div></div>`;
+  return tile(`<h2><span>${ic("target","s")} Goals this week</span><span class="lb">${G.filter(g=>g.x).length}/${G.length}</span></h2>
+  ${G.map(g=>`<div class="rw ${g.x?"done":""}"><button class="cb ${g.x?"on":""}" data-a="gt" data-id="${g.id}" aria-label="Toggle goal" aria-pressed="${g.x}">${ic("check")}</button><span class="g"><span class="tt">${esc(g.t)}</span></span><button class="ib" data-a="gd" data-id="${g.id}" aria-label="Delete goal">${ic("x","s")}</button></div>`).join("")||'<div class="empty">What do you want to get done this week?</div>'}
+  <div class="addrow" data-form data-w="${w}"><input name="g" placeholder="Add a goal for the week" enterkeyhint="done" aria-label="New goal"><button class="ib" data-a="ag" aria-label="Add goal">${ic("plus")}</button></div>`);
 }
 const dayTotals=k=>({sp:sum(S.exp.filter(e=>e.d===k),"a"),rp:sum(S.wo.filter(w=>w.d===k),reps),sets:S.sets.filter(s=>s.d===k).length,km:sum(S.runs.filter(r=>r.d===k),"km"),
   kc:sum(S.meals.filter(m=>m.d===k),"kcal"),st:sum(S.study.filter(s=>s.d===k),"min")});
+const greet=()=>{const h=new Date().getHours();return(h<5?"Good night":h<12?"Good morning":h<18?"Good afternoon":"Good evening")+(S.name?", "+esc(S.name):"")};
+const taskStreak=()=>streak(new Set(S.tasks.filter(t=>t.x).map(t=>t.d)));
 
 function vDay(){
   const k=key(cur);ensureRec([cur]);
   const T=tsort(S.tasks.filter(t=>t.d===k)),done=T.filter(t=>t.x).length,x=dayTotals(k),tg=targets(),split=S.split[wdi(k)];
-  const wk=[x.rp?x.rp+" reps":"",x.sets?plural(x.sets,"set"):"",x.km?r1(x.km)+" km":""].filter(Boolean).join(" · ");
-  return `<div class="stats">
-   ${stat("Tasks done",done+" / "+T.length,T.length?Math.round(done/T.length*100)+"% complete":"Nothing planned yet")}
-   ${stat("Calories",Math.round(x.kc)+(tg?" / "+tg.kcal:""),tg?(tg.kcal-x.kc>=0?Math.round(tg.kcal-x.kc)+" kcal left":Math.round(x.kc-tg.kcal)+" kcal over"):"Set a target in Food")}
-   ${stat("Spent",money(x.sp),S.budget?"daily budget "+money(S.budget/7):"")}
-   ${stat("Study time",hm(x.st),"")}</div>
-  <div class="card mb" data-form data-k="${k}"><h2><span>Tasks</span><button class="sm" data-a="rec">🔁 Repeating</button></h2>
-  ${T.map(trow).join("")||'<div class="empty">Nothing planned. Add your first task below.</div>'}
-  <div class="f" style="margin-top:10px"><input name="t" class="w" placeholder="Add a task…" enterkeyhint="done"></div>
-  <div class="f"><input name="tm" type="time" aria-label="Time (optional)"><label class="dchip x"><input type="checkbox" name="p"><span>⭐ Important</span></label><button class="p x" data-a="at">Add task</button></div>
-  ${learnFields("",1)}</div>
-  <div class="two"><div class="card"><h2><span>💪 Workout</span><button class="sm" data-a="tab" data-t="work">Open</button></h2>
-  <p style="margin:0"><b>${split?esc(split):"Rest day"}</b> <span class="mute">${wk?"· "+wk:"· nothing logged"}</span></p></div>
-  <div class="card"><h2><span>🥗 Food</span><button class="sm" data-a="tab" data-t="food">Open</button></h2>${tg?bar(x.kc/tg.kcal*100,x.kc>tg.kcal*1.05):""}<p class="mute" style="margin:6px 0 0">${Math.round(x.kc)} kcal eaten${tg?" of "+tg.kcal:""}</p></div></div>
-  ${goalsCard()}`;
+  const D=wd(mon(cur)),trained=D.filter(d=>trainedOn(key(d))).length,planned=S.split.filter(Boolean).length||3,sg=S.studyGoal||60;
+  const R=[{p:T.length?done/T.length:0,color:COL.today,l:"Tasks",v:`${done}/${T.length}`,go:"today"},
+    {p:tg?x.kc/tg.kcal:0,color:COL.food,l:"Food",v:tg?Math.round(x.kc/tg.kcal*100)+"%":Math.round(x.kc)+" kcal",go:"food"},
+    {p:trained/planned,color:COL.work,l:"Workout",v:`${trained}/${planned} days`,go:"work"},
+    {p:x.st/sg,color:COL.learn,l:"Study",v:`${hm(x.st)} / ${hm(sg)}`,go:"learn"}];
+  const isT=k===today();
+  return head(isT?greet():DNL[wdi(k)],{nav:"day",right:fire(taskStreak())})+seg("pmode",[["day","Day"],["week","Week"],["month","Month"]],"day")+`<div class="stack">
+  ${tile(`<div class="ringbox">${rings(R,128)}<div class="legend">${R.map(r=>`<div class="rw tap" data-a="go" data-go="${r.go}"><span class="dot" style="background:${r.color}"></span><span class="g">${r.l}</span><span class="v">${r.v}</span></div>`).join("")}</div></div>`)}
+  <div class="grid2">${tile(`<div class="lb">${ic("wallet","s")} Spent</div><div class="big">${moneyS(x.sp)}${S.cur==="UZS"?' <small class="mute">so\'m</small>':""}</div>`,"t tap",'data-a="tab" data-t="spend"')}
+  ${tile(`<div class="lb">${ic("barbell","s")} Workout</div><div class="big">${split?esc(split):"Rest day"}</div>`,"t tap",'data-a="go" data-go="work"')}</div>
+  ${tile(`<h2><span>Tasks</span><span style="display:flex;gap:2px;align-items:center"><span class="lb">${done}/${T.length}</span><button class="ib" data-a="rec" aria-label="Repeating tasks" title="Repeating tasks">${ic("repeat","s")}</button></span></h2>
+  ${T.map(trow).join("")||'<div class="empty">Nothing planned yet. Add your first task.</div>'}${addRow(k)}`)}
+  ${goalsTile()}${backupNudge()}</div>`;
 }
 
 function vWeek(){
   const D=wkD(),tk=today();ensureRec(D);
-  const T=S.tasks.filter(t=>inR(t.d,D)),done=T.filter(t=>t.x).length,R=S.runs.filter(r=>inR(r.d,D));
-  let h=`<div class="stats">${stat("Tasks done",done+" / "+T.length,T.length?Math.round(done/T.length*100)+"% complete":"Add tasks below")}${stat("Spent",money(sum(S.exp.filter(e=>inR(e.d,D)),"a")),"this week")}
-  ${stat("Workout reps",sum(S.wo.filter(w=>inR(w.d,D)),reps),plural(new Set(S.sets.filter(s=>inR(s.d,D)).map(s=>s.d)).size,"gym day"))}${stat("Study time",hm(sum(S.study.filter(s=>inR(s.d,D)),"min")),R.length+" / "+S.goal+" runs")}</div>
-  ${goalsCard()}<div class="grid">`;
-  D.forEach((d,i)=>{
-    const k=key(d),t=tsort(S.tasks.filter(x=>x.d===k)),x=dayTotals(k),sp=S.split[i];
-    h+=`<div class="day ${k===tk?"today":""}" data-form data-k="${k}"><h3><span data-a="cal" data-k="${k}" class="tt">${DN[i]} ${d.getDate()} ${sh(d,{month:"short"})}</span>${k===tk?'<span class="chip soft">Today</span>':""}</h3>
-    ${sp?`<small class="mute">💪 ${esc(sp)}</small>`:""}
-    ${t.map(trow).join("")||'<div class="empty">Nothing planned</div>'}
-    <div class="f"><input name="t" placeholder="Add a task…" enterkeyhint="done"><button class="p x" data-a="at" aria-label="Add task">+</button></div>
-    <div class="chips">${x.sp?`<span class="chip soft">💸 ${moneyS(x.sp)}</span>`:""}${x.rp?`<span class="chip soft">💪 ${x.rp}</span>`:""}${x.sets?`<span class="chip soft">🏋️ ${x.sets} sets</span>`:""}${x.km?`<span class="chip soft">🏃 ${r1(x.km)} km</span>`:""}${x.kc?`<span class="chip soft">🥗 ${Math.round(x.kc)}</span>`:""}${x.st?`<span class="chip soft">📚 ${hm(x.st)}</span>`:""}</div></div>`;
-  });
+  const T=S.tasks.filter(t=>inR(t.d,D)),done=T.filter(t=>t.x).length;
+  let h=head("This week",{nav:"week",right:fire(taskStreak())})+seg("pmode",[["day","Day"],["week","Week"],["month","Month"]],"week")+`<div class="stack">
+  <div class="grid2">${tile(`<div class="lb">Tasks done</div><div class="big">${done}/${T.length}</div>`,"t")}${tile(`<div class="lb">Spent</div><div class="big">${moneyS(sum(S.exp.filter(e=>inR(e.d,D)),"a"))}</div>`,"t")}
+  ${tile(`<div class="lb">Workout days</div><div class="big">${D.filter(d=>trainedOn(key(d))).length}</div>`,"t")}${tile(`<div class="lb">Study</div><div class="big">${hm(sum(S.study.filter(s=>inR(s.d,D)),"min"))}</div>`,"t")}</div>
+  ${goalsTile()}`;
+  D.forEach((d,i)=>{const k=key(d),t=tsort(S.tasks.filter(x=>x.d===k)),dn=t.filter(x=>x.x).length;
+    h+=tile(`<h2><span class="tap" data-a="cal" data-k="${k}" style="display:flex;align-items:center;gap:10px">${ring1(t.length?dn/t.length:0,COL.today,"","",30,"")}<span>${DN[i]} ${d.getDate()} ${sh(d,{month:"short"})}${k===tk?' <span class="badge">Today</span>':""}<br><small class="mute" style="font-weight:500">${S.split[i]?esc(S.split[i]):"Rest"}</small></span></span><span class="lb">${t.length?dn+"/"+t.length:""}</span></h2>
+    ${t.map(trow).join("")}${addRow(k)}`)});
   return h+"</div>";
 }
 
 function vMonth(){
   const M=monthDays(cur),tk=today(),mk=key(cur).slice(0,7);ensureRec(M);
   const cells=[];for(let d=mon(M[0]);d<=addD(mon(M[M.length-1]),6);d=addD(d,1))cells.push(d);
-  const MT=S.tasks.filter(t=>t.d.startsWith(mk)),done=MT.filter(t=>t.x).length;
-  let perfect=0;
+  const MT=S.tasks.filter(t=>t.d.startsWith(mk)),done=MT.filter(t=>t.x).length;let perfect=0;
   const c=cells.map(d=>{const k=key(d),T=S.tasks.filter(t=>t.d===k),x=T.filter(t=>t.x).length,p=T.length?x/T.length:0,inM=k.startsWith(mk);
     if(inM&&T.length&&x===T.length)perfect++;
-    const bg=T.length&&x?`background:color-mix(in srgb,${pal(0)} ${Math.round(14+70*p)}%,var(--card));${p>=.6?"color:#fff;":""}`:"";
-    return `<button data-a="cal" data-k="${k}" class="${inM?"":"out"} ${k===tk?"today":""}" style="${bg}" aria-label="${dayLbl(d)}: ${x} of ${T.length} tasks done"><span>${d.getDate()}</span><small>${T.length?x+"/"+T.length:""}</small></button>`}).join("");
-  const sw=(p,l)=>`<span><i class="dot" style="background:color-mix(in srgb,${pal(0)} ${Math.round(14+70*p)}%,var(--card))"></i>${l}</span>`;
-  return `<div class="stats">${stat("Tasks done",done+" / "+MT.length,MT.length?Math.round(done/MT.length*100)+"% complete":"")}${stat("Perfect days",perfect,"every task done")}
-  ${stat("Spent",money(sum(S.exp.filter(e=>e.d.startsWith(mk)),"a")),"this month")}${stat("Study time",hm(sum(S.study.filter(s=>s.d.startsWith(mk)),"min")),"this month")}</div>
-  <div class="card"><div class="cal">${DN.map(n=>`<div class="hd">${n}</div>`).join("")}${c}</div>
-  <div class="legend">Shade = share of tasks done: ${sw(.1,"few")}${sw(.5,"half")}${sw(1,"all")} · tap a day to open it</div></div>`;
+    const bg=T.length&&x?`background:color-mix(in srgb,var(--c-today) ${Math.round(18+72*p)}%,var(--bg));${p>=.55?"color:#fff;":""}`:"";
+    return `<button data-a="cal" data-k="${k}" class="${inM?"":"out"} ${k===tk?"now":""}" style="${bg}" aria-label="${dayLbl(d)}: ${x} of ${T.length} tasks done"><span>${d.getDate()}</span><small>${T.length?x+"/"+T.length:""}</small></button>`}).join("");
+  const sw=p=>`<span class="dot" style="background:color-mix(in srgb,var(--c-today) ${Math.round(18+72*p)}%,var(--bg))"></span>`;
+  return head(sh(cur,{month:"long"}),{nav:"month",right:fire(taskStreak())})+seg("pmode",[["day","Day"],["week","Week"],["month","Month"]],"month")+`<div class="stack">
+  <div class="grid2">${tile(`<div class="lb">Tasks done</div><div class="big">${done}/${MT.length} <small class="mute">${MT.length?Math.round(done/MT.length*100)+"%":""}</small></div>`,"t")}${tile(`<div class="lb">Perfect days</div><div class="big">${perfect}</div>`,"t")}</div>
+  ${tile(`<div class="cal">${DN.map(n=>`<div class="h">${n[0]}</div>`).join("")}${c}</div><div class="lgn">${sw(.15)} few ${sw(.5)} half ${sw(1)} all done · tap a day to open it</div>`)}</div>`;
 }
 
 function recSheet(){
-  return `${S.rec.map(r=>{const L=r.lid&&S.learn.find(l=>l.id===r.lid);return `<div class="row"><span class="g">${r.tm?`<b class="mute">${r.tm}</b> `:""}${r.p?"⭐ ":""}${esc(r.t)}<br><small class="mute">${recDays(r.days)}${L?" · 📚 "+esc(L.name):""}</small></span><button class="ib" data-a="rdel" data-id="${r.id}" aria-label="Delete">✕</button></div>`}).join("")||'<div class="empty">No repeating tasks yet.</div>'}
-  <div data-form style="margin-top:14px"><h3>New repeating task</h3>
-  <label class="fl"><span>Task</span><input name="t" placeholder="e.g. Leetcode 2 problems"></label>
-  <div class="fl"><span>Repeats on</span>${dayChecks([0,1,2,3,4])}<div class="f" style="margin-top:6px"><button class="sm x" data-a="rq" data-v="0123456">Every day</button><button class="sm x" data-a="rq" data-v="01234">Weekdays</button><button class="sm x" data-a="rq" data-v="56">Weekends</button></div></div>
-  <div class="f"><label class="fl"><span>Time (optional)</span><input name="tm" type="time"></label><div class="fl"><span>&nbsp;</span><label class="dchip"><input type="checkbox" name="p"><span>⭐ Important</span></label></div></div>
-  ${learnFields("",1)}<button class="p" data-a="radd" style="width:100%;margin-top:8px">Add repeating task</button>
-  <p class="mute"><small>New tasks appear on matching days from today on. Deleting one day's copy skips just that day.</small></p></div>`;
+  return `${S.rec.map(r=>{const L=r.lid&&S.learn.find(l=>l.id===r.lid);return `<div class="rw"><span class="g">${r.p?ic("star","s")+" ":""}${esc(r.t)}<div class="meta">${recDays(r.days)}${r.tm?" · "+r.tm:""}${L?" · "+esc(L.name):""}</div></span><button class="ib" data-a="rdel" data-id="${r.id}" aria-label="Stop repeating">${ic("trash","s")}</button></div>`}).join("")||'<div class="empty">Tasks you do regularly, like "Leetcode 2 problems", can appear on their own.</div>'}
+  <div data-form style="margin-top:16px">${taskFields({t:"",tm:"",p:false,lid:"",lu:1},[0,1,2,3,4])}<button class="btn p w" data-a="radd">Add repeating task</button></div>`;
+}
+// Shared task form fields; days!==null shows the repeat picker.
+function taskFields(t,days=null){
+  return `<label class="fl"><span>Task</span><input name="t" value="${esc(t.t)}" placeholder="Leetcode 2 problems" autofocus></label>
+  ${days?`<div class="fl"><span>Repeats on</span>${dayChecks(days)}<div class="f" style="margin-top:6px"><button class="btn sm x" data-a="rq" data-v="0123456">Every day</button><button class="btn sm x" data-a="rq" data-v="01234">Weekdays</button><button class="btn sm x" data-a="rq" data-v="56">Weekends</button></div></div>`:""}
+  <div class="f">${t.d!==undefined?`<label class="fl"><span>Date</span><input type="date" name="d" value="${t.d}"></label>`:""}<label class="fl"><span>Time (optional)</span><input type="time" name="tm" value="${t.tm}"></label></div>
+  <div class="chipset fl"><label><input type="checkbox" name="p" ${t.p?"checked":""}><span>${ic("star","s")} Important</span></label></div>${learnFields(t.lid,t.lu)}`;
 }
 function taskSheet(id){
   const t=task(id);if(!t)return'<div class="empty">This task was deleted.</div>';
-  return `<div data-form data-id="${id}"><label class="fl"><span>Task</span><input name="t" value="${esc(t.t)}"></label>
-  <div class="f"><label class="fl"><span>Date</span><input type="date" name="d" value="${t.d}"></label><label class="fl"><span>Time</span><input type="time" name="tm" value="${t.tm}"></label></div>
-  <label class="row"><input type="checkbox" name="p" ${t.p?"checked":""}> ⭐ Important</label>
-  ${learnFields(t.lid,t.lu)}${t.rid?'<p class="mute"><small>🔁 This is one day of a repeating task. Changes apply to this day only.</small></p>':""}
-  <div class="btns" style="margin-top:12px"><button class="p" data-a="tsave">Save</button><button data-a="dt" data-id="${id}">Delete</button></div></div>`;
+  return `<div data-form data-id="${id}">${taskFields(t)}${t.rid?'<p class="lb">This is one day of a repeating task. Changes apply to this day only.</p>':""}
+  <button class="btn p w" data-a="tsave">Save</button><div class="f"><button class="btn" data-a="mv" data-id="${id}">${ic("arrow-forward-up","s")} Tomorrow</button><button class="btn" data-a="dt" data-id="${id}">${ic("trash","s")} Delete</button></div></div>`;
 }
 
-V.plan={title:"Plan",nav:()=>mode.plan,render(){
-  return seg("pmode",[["day","Day"],["week","Week"],["month","Month"]],mode.plan)+(mode.plan==="day"?vDay():mode.plan==="week"?vWeek():vMonth());
-}};
+V.today={title:"Today",nav:()=>mode.plan,render:()=>mode.plan==="day"?vDay():mode.plan==="week"?vWeek():vMonth()};
 
-A.pmode=b=>{mode.plan=b.dataset.v};
-A.cal=b=>{cur=dt(b.dataset.k);mode.plan="day";scrollTo(0,0)};
-A.tg=b=>{const t=task(b.dataset.id);if(!t)return false;t.x=b.checked;syncLearn(t)};
-A.mv=b=>{const t=task(b.dataset.id);skipRec(t);t.d=key(addD(dt(t.d),1));syncLearn(t);toast("Moved to "+dayLbl(dt(t.d)))};
-A.dt=b=>{const t=task(b.dataset.id);if(!t)return;skipRec(t);S.tasks=S.tasks.filter(x=>x!==t);S.study=S.study.filter(s=>s.src!==t.id);closeSheet()};
-A.at=(b,f,F)=>{const t=F.v("t");if(!t)return false;
-  S.tasks.push({id:uid(),d:f.dataset.k,t,x:false,p:F.ck("p"),tm:F.v("tm"),rid:"",lid:F.v("lid"),lu:F.v("lid")?F.n("lu")||1:0});
-  return `[data-k="${f.dataset.k}"] [name=t]`};
+A.pmode=b=>{mode.plan=b.dataset.v;anim=true};
+A.go=b=>{const g=b.dataset.go;if(g==="today")return false;if(g==="learn")tab="learn";else{tab="fit";mode.fit=g}anim=true;scrollTo(0,0)};
+A.cal=b=>{cur=dt(b.dataset.k);mode.plan="day";anim=true;scrollTo(0,0)};
+A.tg=b=>{const t=task(b.dataset.id);if(!t)return false;t.x=!t.x;syncLearn(t);
+  if(t.x){popId=t.id;try{navigator.vibrate&&navigator.vibrate(12)}catch(e){}setTimeout(()=>popId="",400)}};
+A.mv=b=>{const t=task(b.dataset.id);snap();skipRec(t);t.d=key(addD(dt(t.d),1));syncLearn(t);closeSheet();undoToast("Moved to "+dayLbl(dt(t.d)))};
+A.dt=b=>{const t=task(b.dataset.id);if(!t)return;snap();skipRec(t);S.tasks=S.tasks.filter(x=>x!==t);S.study=S.study.filter(s=>s.src!==t.id);closeSheet();undoToast("Task deleted")};
+A.at=(b,f,F)=>{const t=F.v("t");if(!t)return false;S.tasks.push({id:uid(),d:f.dataset.k,t,x:false,p:false,tm:"",rid:"",lid:"",lu:0});return `[data-k="${f.dataset.k}"] [name=t]`};
 A.te=b=>{const id=b.dataset.id;sheet("Edit task",()=>taskSheet(id));return false};
 A.tsave=(b,f,F)=>{const t=task(f.dataset.id);if(!t||!F.v("t"))return false;
   if(F.v("d")&&F.v("d")!==t.d){skipRec(t);t.d=F.v("d")}
-  Object.assign(t,{t:F.v("t"),tm:F.v("tm"),p:F.ck("p"),lid:F.v("lid"),lu:F.v("lid")?F.n("lu")||1:0});syncLearn(t);closeSheet()};
+  Object.assign(t,{t:F.v("t"),tm:F.v("tm"),p:F.ck("p"),lid:F.v("lid"),lu:F.v("lid")?F.n("lu")||1:0});syncLearn(t);closeSheet();toast("Saved")};
 A.ag=(b,f,F)=>{const t=F.v("g");if(!t)return false;S.goals.push({id:uid(),d:f.dataset.w,t,x:false});return `[data-w] [name=g]`};
-A.gt=b=>{const g=S.goals.find(x=>x.id===b.dataset.id);g.x=b.checked};
-A.gd=b=>{S.goals=S.goals.filter(x=>x.id!==b.dataset.id)};
+A.gt=b=>{const g=S.goals.find(x=>x.id===b.dataset.id);g.x=!g.x};
+A.gd=b=>{snap();S.goals=S.goals.filter(x=>x.id!==b.dataset.id);undoToast("Goal deleted")};
 A.rec=()=>{sheet("Repeating tasks",recSheet);return false};
 A.rq=(b,f)=>{f.querySelectorAll("[name=rd]").forEach(i=>i.checked=b.dataset.v.includes(i.value));return false};
 A.radd=(b,f,F)=>{const t=F.v("t"),days=F.all("rd").map(Number);
   if(!t||!days.length){toast("Add a task name and pick at least one day");return false}
   S.rec.push({id:uid(),t,days,tm:F.v("tm"),p:F.ck("p"),lid:F.v("lid"),lu:F.v("lid")?F.n("lu")||1:0,start:today(),skip:[]});toast("Repeating task added")};
-A.rdel=async b=>{const r=S.rec.find(x=>x.id===b.dataset.id);
-  const ok=await ask(`<h2>Stop repeating “${esc(r.t)}”?</h2><p class="mute">Upcoming unfinished copies are removed. Days you already completed stay in your history.</p>`,[["y","Stop repeating"],["","Cancel"]]);
-  if(!ok)return false;const t=today();
-  S.tasks=S.tasks.filter(x=>!(x.rid===r.id&&!x.x&&x.d>=t));S.tasks.forEach(x=>{if(x.rid===r.id)x.rid=""});S.rec=S.rec.filter(x=>x!==r)};
+A.rdel=b=>{const r=S.rec.find(x=>x.id===b.dataset.id),t=today();snap();
+  S.tasks=S.tasks.filter(x=>!(x.rid===r.id&&!x.x&&x.d>=t));S.tasks.forEach(x=>{if(x.rid===r.id)x.rid=""});S.rec=S.rec.filter(x=>x!==r);undoToast("Stopped repeating")};
